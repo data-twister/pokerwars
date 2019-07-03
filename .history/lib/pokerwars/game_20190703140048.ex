@@ -3,8 +3,10 @@ defmodule Pokerwars.Game do
 
   require Logger
 
+@min_players 2
+@min_players 10
 
-  defstruct players: [], status: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, buy_in: 5, min_players: 2, max_players: 10}, type: "texas holdem", turn: nil
+  defstruct players: [], status: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, ante: 0, buy_in: 5, min_players: 2, max_players: 2}, type: "texas holdem"
 
   def create(deck \\ Deck.in_order) do
     %__MODULE__{ original_deck: deck }
@@ -24,38 +26,18 @@ defmodule Pokerwars.Game do
     end
   end
 
-  def bet(game, player) do
-    
-  end
-
   defp phase(:ready_to_start, game, action) do
     ready_to_start(action, game)
   end
 
-  defp phase(:pre_flop, game, action) do
-    ready_to_start(action, game)
-  end
-
-  defp phase(:flop, game, action) do
-    ready_to_start(action, game)
-  end
-
-  defp phase(:turn, game, action) do
-    ready_to_start(action, game)
-  end
-
-  defp phase(:river, game, action) do
-    ready_to_start(action, game)
-  end
-
-  defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
- when length(players) == min_players do
+  defp next_status(%__MODULE__{status: :waiting_for_players, players: players} = game)
+ when length(players) == 2 do
     {:ok, %{game | status: :ready_to_start}}
   end
   defp next_status(game), do: {:ok, game}
 
-  defp waiting_for_players({:join, player}, %{players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
-  when length(players) < max_players do
+  defp waiting_for_players({:join, player}, %{players: players} = game)
+  when length(players) < @max_players do
 
     ## check if player have enough stack for game if not dont let them join
      case player.stack > game.rules.buy_in do
@@ -70,12 +52,11 @@ defmodule Pokerwars.Game do
 
   defp ready_to_start({:start_game}, game) do
 
-    game = take_buyin(game)
-
     game = deal_hands(game)
 
-    game = %{game | status: :pre_flop, turn: List.first(game.players)}
+    game = %{game | status: :pre_flop}
 
+    game = take_buyin(game)
     {:ok, game}
   end
 
@@ -122,7 +103,7 @@ defmodule Pokerwars.Game do
 
     amount_taken = Enum.count(new_players) * rules.buy_in
 
-    %{game | players: players_state, pot: pot + amount_taken}
+    %{game | players: new_players, pot: pot + amount_taken}
   end
 
   defp take_bet(game, {player, bet} = bet) do

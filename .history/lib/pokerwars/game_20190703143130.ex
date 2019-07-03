@@ -4,7 +4,7 @@ defmodule Pokerwars.Game do
   require Logger
 
 
-  defstruct players: [], status: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, buy_in: 5, min_players: 2, max_players: 10}, type: "texas holdem", turn: nil
+  defstruct players: [], status: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, ante: 0, buy_in: 5, min_players: 2, max_players: 10}, type: "texas holdem", turn: nil
 
   def create(deck \\ Deck.in_order) do
     %__MODULE__{ original_deck: deck }
@@ -22,10 +22,6 @@ defmodule Pokerwars.Game do
     else
       err -> err
     end
-  end
-
-  def bet(game, player) do
-    
   end
 
   defp phase(:ready_to_start, game, action) do
@@ -48,13 +44,13 @@ defmodule Pokerwars.Game do
     ready_to_start(action, game)
   end
 
-  defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
+  defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind, ante: ante, buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
  when length(players) == min_players do
     {:ok, %{game | status: :ready_to_start}}
   end
   defp next_status(game), do: {:ok, game}
 
-  defp waiting_for_players({:join, player}, %{players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
+  defp waiting_for_players({:join, player}, %{players: players, rules: %{small_blind: small_blind, big_blind: big_blind, ante: ante, buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
   when length(players) < max_players do
 
     ## check if player have enough stack for game if not dont let them join

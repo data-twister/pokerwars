@@ -24,10 +24,6 @@ defmodule Pokerwars.Game do
     end
   end
 
-  def bet(game, player) do
-    
-  end
-
   defp phase(:ready_to_start, game, action) do
     ready_to_start(action, game)
   end

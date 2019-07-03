@@ -17,5 +17,7 @@ defmodule Pokerwars.Player do
     %{player | hand: hand ++ [card]}
   end
 
-
+  def fold(%Player{} = player) do
+    clear_hand player
+  end
 end

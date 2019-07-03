@@ -5,7 +5,7 @@ defmodule Pokerwars.Player do
   def create(name, stack \\ 0) do
 
     #stack is another name for chips
-
+    
     %Player{name: name, stack: stack}
   end
 
@@ -16,6 +16,4 @@ defmodule Pokerwars.Player do
   def add_card_to_hand(%Player{hand: hand} = player, card) do
     %{player | hand: hand ++ [card]}
   end
-
-
 end
