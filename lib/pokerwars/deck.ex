@@ -33,15 +33,15 @@ defmodule Pokerwars.Deck do
     {result, new_cards} = Enum.split(cards, num)
     {result, %{deck | cards: new_cards}}
   end
-  def take(deck, _num), do: {:error, deck}
+  def take(deck, _num, _), do: {:error, deck}
 
   def shuffle(%__MODULE__{cards: cards} = deck, shuffle_fun \\ &Enum.shuffle/1) do
     %{deck | cards: shuffle_fun.(cards)}
   end
 
 
-  def deal(%__MODULE__{} = deck) do
-    case take(deck, 1, true) do
+  def deal(%__MODULE__{} = deck, burn \\ false) do
+    case take(deck, 1, burn) do
       {:error, _} -> {:error, deck}
       {[card], new_deck} -> {card, new_deck}
     end

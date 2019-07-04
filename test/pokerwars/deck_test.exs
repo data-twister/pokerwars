@@ -52,6 +52,19 @@ defmodule Pokerwars.DeckTest do
     assert Card.print(card) == "3h"
   end
 
+  test "it burns a card then deals a single card" do
+    {card, new_deck} =
+      Deck.in_order()
+      |> Deck.deal true
+
+    assert Card.print(card) == "3h"
+
+    {card, _} =
+      Deck.deal(new_deck)
+
+    assert Card.print(card) == "4h"
+  end
+
   test "it creates a new deck in a specified order" do
     {cards, _} =
       Deck.from_cards(parse_cards("2h Ah 10d 7s 8h"))
