@@ -4,14 +4,15 @@ defmodule Pokerwars.Game do
   require Logger
 
 
-  defstruct players: [], status: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, buy_in: 5, min_players: 2, max_players: 10}, type: "texas holdem", turn: nil
+  defstruct  hash: nil, players: [], original_players: [], status: :waiting_for_players, phase: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, min_players: 2, max_players: 10}, type: "texas holdem"
 
   def create(deck \\ Deck.in_order) do
-    %__MODULE__{ original_deck: deck }
+    hash = "12345test12345"
+    %__MODULE__{ original_deck: deck, hash: hash }
   end
 
   def apply_action(game, action) do
-    phase(game.status, game, action)
+    phase(game.phase, game, action)
   end
 
   defp phase(:waiting_for_players, game, action) do
@@ -24,69 +25,70 @@ defmodule Pokerwars.Game do
     end
   end
 
-  def bet(game, player) do
-    
-  end
-
   defp phase(:ready_to_start, game, action) do
-    ready_to_start(action, game)
+    game_action(action, game)
   end
 
-  defp phase(:pre_flop, game, action) do
-    ready_to_start(action, game)
+  defp phase(:game_start, game, action) do
+    game_action(action, game)
   end
 
   defp phase(:flop, game, action) do
-    ready_to_start(action, game)
+    game_action(action, game)
   end
 
   defp phase(:turn, game, action) do
-    ready_to_start(action, game)
+    game_action(action, game)
   end
 
   defp phase(:river, game, action) do
-    ready_to_start(action, game)
+    game_action(action, game)
   end
 
-  defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
+  defp phase(:game_over, game, action) do
+    game_action(action, game)
+  end
+
+  defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
  when length(players) == min_players do
     {:ok, %{game | status: :ready_to_start}}
   end
   defp next_status(game), do: {:ok, game}
 
-  defp waiting_for_players({:join, player}, %{players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  buy_in: buy_in, min_players: min_players, max_players: max_players}} = game)
-  when length(players) < max_players do
+  defp waiting_for_players({:join, player}, %{players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  when length(players) < max_players and Enum.member?(game.status, [:waiting_for_players, :ready_to_start]) do
 
-    ## check if player have enough stack for game if not dont let them join
-     case player.stack > game.rules.buy_in do
-       true ->  Logger.info(player.name <> "  has joined the game")
+       Logger.info(player.name <> " has joined the game")
        {:ok, %{game | players: game.players ++ [player]}}
-       false ->  Logger.error(player.name <> "  doesnt have enough stack to join")
-       {:ok, %{game | players: game.players}}
+
      end
    
   end
   defp waiting_for_players(_, game), do: {:invalid_action, game}
 
-  defp ready_to_start({:start_game}, game) do
 
-    game = take_buyin(game)
+  defp game_action({:start_game}, game) do
 
     game = deal_hands(game)
 
-    game = %{game | status: :pre_flop, turn: List.first(game.players)}
+    game = %{game | status: :game_start, phase: :game_start}
 
     {:ok, game}
   end
 
-  defp ready_to_start({:join, player}, game) do
+  defp game_action({:join, player}, game) do
     waiting_for_players({:join, player}, game)
+    {:ok, game}
+  end
+
+  defp game_action({:bet, player, bet}, game) do
+    game = take_bet(game, {player, bet})
     {:ok, game}
   end
 
   defp deal_hands(game) do
     game
-    |> clear_table
+    |> clear_game
     |> deal_cards_to_each_player
     |> deal_cards_to_each_player
   end
@@ -109,28 +111,26 @@ defmodule Pokerwars.Game do
     %{game | players: new_players, pot: pot + amount_taken}
   end
 
-  defp take_buyin(game) do
-    players = game.players
-    rules = game.rules
-    pot = game.pot
-
-    new_players = Enum.filter(players, fn(p) -> p.stack - rules.buy_in > 0 end )
-
-    players_state = Enum.map(new_players, fn(p) -> stack = p.stack - rules.buy_in 
-    Map.put(p, :stack, stack)
-  end)
-
-    amount_taken = Enum.count(new_players) * rules.buy_in
-
-    %{game | players: players_state, pot: pot + amount_taken}
-  end
 
   defp take_bet(game, {player, bet} = bet) do
     pot = game.pot
-    %{game | pot: pot + bet}
+    bet? = false
+    
+    players = Enum.map(game.players, fn(p) ->
+       when p.hash == player.hash and player.stack > game.bet do 
+        bet? = true
+        %{player | stack: player.stack - bet} 
+       end
+  end)
+
+  case bet? do
+    true ->  %{game | pot: pot + bet, bet: bet, players: players}
+    false -> %{game | players: players}
+  end
+   
   end
 
-  defp clear_table(game) do
+  defp clear_game(game) do
     players = Enum.map(game.players, &Player.clear_hand/1)
     %{game | current_deck: game.original_deck, players: players}
   end

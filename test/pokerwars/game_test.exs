@@ -29,18 +29,18 @@ defmodule Pokerwars.GameTest do
 
   test "A game can starts after the second player joins" do
     players = [david(), jade()]
-    game = %{ Game.create | status: :ready_to_start, players: players }
+    game = %{ Game.create | status: :ready_to_start, phase: :ready_to_start, players: players }
 
     {:ok, game} = Game.apply_action(game, {:start_game})
 
-    assert game.status == :pre_flop
+    assert game.status == :game_start
     assert Enum.map(game.players, &(&1.name)) == ["David", "Jade"]
   end
 
   test "Cards are dealt to all the player when the game starts" do
     deck = Deck.from_cards(parse_cards("Ah 10d Js 10h"))
     players = [david(), jade()]
-    game = %{ Game.create(deck) | status: :ready_to_start, players: players }
+    game = %{ Game.create(deck) | status: :ready_to_start, phase: :ready_to_start, players: players }
 
     {:ok, game} = Game.apply_action(game, {:start_game})
 
