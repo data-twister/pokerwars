@@ -180,19 +180,29 @@ end
   end
 
 
-  defp take_bet(game, {player, bet} = bet) do
+  defp take_bet(game, {player, bet}) do
     pot = game.pot
-    bet? = false
-    
-    players = Enum.map(game.players, fn(p) ->
-       case p.hash == player.hash and player.stack > game.bet do 
-        true -> bet? = true
-        %{player | stack: player.stack - bet} 
+    bet? =  Enum.map(game.players, fn(p) ->
+      case p.hash == player.hash and player.stack > game.bet do 
+       true -> true
+       false -> false
+      end
+    end)
+
+    [can_bet?] = Enum.filter(bet?, fn(x) -> x == true end)
+
+    players =  case can_bet? do
+      true ->
+    Enum.map(game.players, fn(p) ->
+       case p.hash == player.hash and p.stack > game.bet do 
+        true ->  %{player | stack: p.stack - bet} 
         false -> p
        end
   end)
+  false -> game.players
+end
 
-  case bet? do
+  case can_bet? do
     true ->  %{game | pot: pot + bet, bet: bet, players: players}
     false -> %{game | players: players}
   end
