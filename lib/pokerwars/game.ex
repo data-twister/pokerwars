@@ -59,32 +59,37 @@ defmodule Pokerwars.Game do
   end
   defp next_phase(%__MODULE__{status: :running, phase: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
   do
-    flop = Enum.take(game.current_deck.cards, 3)
-    new_cards = Enum.slice(game.current_deck.cards, 3, 52)
+    deck = Deck.shuffle(game.original_deck)
+    {result, deck} = Deck.take(deck, 3, true)
 
-    {:ok, %{game | bet: 0,  phase: :flop, current_player: 0, hole_cards: flop, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+    {:ok, %{game | bet: 0,  status: :running, phase: :turn, current_player: 0, hole_cards: result, current_deck: deck}}
   end
   defp next_phase(%__MODULE__{status: :running, phase: :flop, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
   do
-    deal = Enum.take(game.current_deck.cards, 1)
-    hole = [deal] ++ hole_cards  
-    new_cards = Enum.slice(game.current_deck.cards, 1, 52)
+    {card, deck} = Deck.deal(game.current_deck, true)
 
-    {:ok, %{game | bet: 0,  status: :running, phase: :turn, current_player: 0, hole_cards: hole, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+    {:ok, %{game | bet: 0,  status: :running, phase: :turn, current_player: 0, hole_cards: [card] ++ hole_cards, current_deck: deck}}
   end
   defp next_phase(%__MODULE__{status: :running, phase: :turn, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
   do
-    deal = Enum.take(game.current_deck.cards, 1)
-    hole = [deal] ++ hole_cards  
-    new_cards = Enum.slice(game.current_deck.cards, 1, 52)
+    {card, deck} = Deck.deal(game.current_deck, true)
+    hole = [card] ++ hole_cards  
+    new_cards = deck
 
-    {:ok, %{game | bet: 0,  phase: :river, current_player: 0, hole_cards: hole, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+    {:ok, %{game | bet: 0,  phase: :river, current_player: 0, hole_cards: hole, current_deck: deck}}
   end
   defp next_phase(%__MODULE__{status: :running, phase: :river, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
   do
 
     
     {:ok, %{game |  status: :game_over, phase: :game_over }}
+  end
+  defp next_phase(%__MODULE__{status: :game_over, phase: :game_over, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  do
+
+    winner = Ranker.decide_winners(players)
+    
+    {:ok, %{game |  winner: winner }}
   end
 
   defp next_status(game), do: {:ok, game}
@@ -122,7 +127,8 @@ end
   end
 
   defp game_action({:raise, player, bet}, game) do
-    game = take_bet(game, {player, bet})
+    raised_amt = game.bet + bet
+    game = take_bet(game, {player, raised_amt})
     {:ok, game}
   end
 
@@ -134,7 +140,9 @@ end
     true -> 
     case game.bet == 0 do
       true -> {:ok, %{game | current_player: current_player + 1}}
-        false -> {:error, "unable to check when there is an open bet, you must bet, raise or fold"}
+        false ->
+          Logger.error("unable to check when there is an open bet, you must bet, raise or fold") 
+          {:ok, game}
     end
     false -> 
     next_phase(game)
