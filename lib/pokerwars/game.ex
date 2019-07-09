@@ -4,7 +4,7 @@ defmodule Pokerwars.Game do
   require Logger
 
 
-  defstruct  hash: nil, players: [], original_players: [], status: :waiting_for_players, phase: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, min_players: 2, max_players: 10}, type: "texas holdem", current_player: 0
+  defstruct  hash: nil, players: [], status: :waiting_for_players, phase: :waiting_for_players, current_deck: nil, original_deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, min_players: 2, max_players: 10}, hole_cards: [], current_player: 0
 
   def create(deck \\ Deck.in_order) do
     hash = hash_id()
@@ -33,32 +33,60 @@ defmodule Pokerwars.Game do
     game_action(action, game)
   end
 
-  defp phase(:game_start, game, action) do
+  defp phase(:game_over, game, action) do
     game_action(action, game)
   end
 
-  defp phase(:game_start, game, action) do
-    new_game = if(game.current_player == length(game.players)) do
-      new_game = %{ game | status: :game_start }
-    else
-      flop = Enum.take(game.current_deck.cards, 3)
-      new_cards = Enum.slice(game.current_deck.cards, 3, 52)
-
-       new_game = %{ game | status: :flop, hole_cards: flop, \
-        current_deck: %Deck{game.current_deck | cards: new_cards } }
-    end
-
-     {:ok, new_game}
+  defp phase(:pre_flop, game, action) do
+    game_action(action, game)
   end
 
   defp phase(:flop, game, action) do
-    {:ok, game}
+    game_action(action, game)
+  end
+
+  defp phase(:turn, game, action) do
+    game_action(action, game)
+  end
+
+  defp phase(:river, game, action) do
+    game_action(action, game)
   end
 
   defp next_status(%__MODULE__{status: :waiting_for_players, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
  when length(players) == min_players do
-    {:ok, %{game | status: :ready_to_start}}
+    {:ok, %{game | status: :ready_to_start, phase: :ready_to_start}}
   end
+  defp next_phase(%__MODULE__{status: :running, phase: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  do
+    flop = Enum.take(game.current_deck.cards, 3)
+    new_cards = Enum.slice(game.current_deck.cards, 3, 52)
+
+    {:ok, %{game | bet: 0,  phase: :flop, current_player: 0, hole_cards: flop, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+  end
+  defp next_phase(%__MODULE__{status: :running, phase: :flop, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  do
+    deal = Enum.take(game.current_deck.cards, 1)
+    hole = [deal] ++ hole_cards  
+    new_cards = Enum.slice(game.current_deck.cards, 1, 52)
+
+    {:ok, %{game | bet: 0,  status: :running, phase: :turn, current_player: 0, hole_cards: hole, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+  end
+  defp next_phase(%__MODULE__{status: :running, phase: :turn, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  do
+    deal = Enum.take(game.current_deck.cards, 1)
+    hole = [deal] ++ hole_cards  
+    new_cards = Enum.slice(game.current_deck.cards, 1, 52)
+
+    {:ok, %{game | bet: 0,  phase: :river, current_player: 0, hole_cards: hole, current_deck: %Deck{game.current_deck | cards: new_cards }}}
+  end
+  defp next_phase(%__MODULE__{status: :running, phase: :river, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
+  do
+
+    
+    {:ok, %{game |  status: :game_over, phase: :game_over }}
+  end
+
   defp next_status(game), do: {:ok, game}
 
   defp waiting_for_players({:join, player}, %{players: players, status: status, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
@@ -76,8 +104,9 @@ end
   defp game_action({:start_game}, game) do
 
     game = deal_hands(game)
+    game = take_blinds(game)
 
-    game = %{game | status: :game_start, phase: :game_start}
+    game = %{game | status: :running, phase: :pre_flop}
 
     {:ok, game}
   end
@@ -89,6 +118,39 @@ end
 
   defp game_action({:bet, player, bet}, game) do
     game = take_bet(game, {player, bet})
+    {:ok, game}
+  end
+
+  defp game_action({:raise, player, bet}, game) do
+    game = take_bet(game, {player, bet})
+    {:ok, game}
+  end
+
+  defp game_action({:check, player}, game) do
+
+    current_player = game.current_player
+
+    case current_player < Enum.count(game.players) - 1 do
+    true -> 
+    case game.bet == 0 do
+      true -> {:ok, %{game | current_player: current_player + 1}}
+        false -> {:error, "unable to check when there is an open bet, you must bet, raise or fold"}
+    end
+    false -> 
+    next_phase(game)
+    end
+    
+  end
+
+  defp game_action({:fold, player}, game) do
+
+    new_players =  Enum.reject(game.players, fn(p) -> p.hash == player.hash end)
+
+    game = case Enum.count(new_players) < 2 do
+      true ->   %{game | status: :game_over, phase: :game_over, players: new_players}
+      false ->  %{game | players: new_players}
+    end
+    
     {:ok, game}
   end
 
@@ -164,4 +226,22 @@ end
 
     {updated_deck, [updated_player | updated_others]}
   end
+
+  defimpl String.Chars, for: Pokerwars.Game do
+    def to_string(game) do
+      deck = game.current_deck || %Pokerwars.Deck{}
+      card_count = length(deck.cards)
+      player_count = length(game.players)
+  
+       Enum.join [
+        "%Pokerwars.Game{\n",
+        "  status: #{game.status}\n",
+        "  phase: #{game.phase}\n",
+        "  pot: #{game.pot}\n",
+        "  current_deck: #{card_count}\n",
+        "  players: #{player_count}\n",
+        "}"
+      ]
+    end
+end
 end

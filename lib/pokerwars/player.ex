@@ -1,12 +1,12 @@
 defmodule Pokerwars.Player do
-  defstruct name: '', hand: [], stack: 0
+  defstruct hash: nil, name: '', hand: [], stack: 0
   alias Pokerwars.Player
 
   def create(name, stack \\ 0) do
 
-    #stack is another name for chips
+    hash = hash_id()
 
-    %Player{name: name, stack: stack}
+    %Player{hash: hash, name: name, stack: stack}
   end
 
   def clear_hand(%Player{} = player) do
@@ -17,5 +17,8 @@ defmodule Pokerwars.Player do
     %{player | hand: hand ++ [card]}
   end
 
+  defp hash_id(number \\ 20) do
+    Base.encode64(:crypto.strong_rand_bytes(number))
+  end
 
 end
