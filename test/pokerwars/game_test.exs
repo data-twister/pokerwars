@@ -60,7 +60,7 @@ defmodule Pokerwars.GameTest do
       step "There are 5 cards on the table"
       assert length(game.hole_cards) == 5
 
-      step "the game is over"
+      step "The game is over"
       game = with \
         {:ok, game} <- Game.apply_action(game, {:check, @player1}),
         {:ok, game} <- Game.apply_action(game, {:check, @player2}),
