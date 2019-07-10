@@ -21,11 +21,8 @@ defmodule Pokerwars.GameTest do
       assert game.status == :ready_to_start
   
        step "The game is started"
-      {:ok, game} = Game.apply_action(game, {:start_game})
+       {:ok, game} = Game.apply_action(game, {:start_game})
       assert game.phase == :pre_flop
-  
-      #  step "The players pay small and big blinds automatically"
-      # assert [90, 80] == Enum.map(game.players, &(&1.stack))
   
        step "Both players can see 2 cards"
       assert 2 == length(Enum.map(game.players, &(&1.hand)))
