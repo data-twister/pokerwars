@@ -130,7 +130,7 @@ end
     current_player = game.current_player
 
     case current_player < Enum.count(game.players) - 1 do
-    true ->  game
+    true ->   %{game | current_player: current_player + 1}
     false -> next_phase(game)
     end
     
@@ -142,7 +142,7 @@ end
       true-> raised_amt = game.bet + bet
       take_bet(game, {player, raised_amt})
       false -> game
-    {:ok, game}
+      {:ok, %{game | current_player: current_player + 1}}
   end
   end
 
@@ -166,7 +166,7 @@ true->
       true -> {:ok, %{game | current_player: current_player + 1}}
         false ->
           Logger.error("unable to check when there is an open bet, you must bet, raise or fold") 
-          {:ok, game}
+          {:ok, %{game | current_player: current_player + 1}}
     end
     false -> 
     next_phase(game)
