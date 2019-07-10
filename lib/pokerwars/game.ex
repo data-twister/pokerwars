@@ -126,21 +126,32 @@ end
       true-> take_bet(game, {player, bet})
       false -> game
     end
+
+    current_player = game.current_player
+
+    case current_player < Enum.count(game.players) - 1 do
+    true ->  game
+    false -> next_phase(game)
+    end
     
     {:ok, game}
   end
 
   defp game_action({:raise, player, bet}, game) do
-    raised_amt = game.bet + bet
     game =  case current_player?(player, game) do
-      true-> take_bet(game, {player, raised_amt})
+      true-> raised_amt = game.bet + bet
+      take_bet(game, {player, raised_amt})
       false -> game
     {:ok, game}
   end
   end
 
   defp current_player?(p,game) do
-    true
+
+    index = Enum.find_index(game.players, fn x -> x.hash == p.hash end)
+ 
+   index == game.current_player 
+
   end
 
   defp game_action({:check, player}, game) do
@@ -149,7 +160,7 @@ end
 true->
     current_player = game.current_player
 
-    case current_player < Enum.count(game.players) - 1 do
+    case current_player < Enum.count(game.players) -1 do
     true -> 
     case game.bet == 0 do
       true -> {:ok, %{game | current_player: current_player + 1}}
@@ -160,6 +171,7 @@ true->
     false -> 
     next_phase(game)
     end
+
   false -> game
   end
 end

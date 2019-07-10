@@ -47,10 +47,10 @@ defmodule Pokerwars.GameTest do
        step "There are 4 cards on the table"
       assert length(game.hole_cards) == 4
 
-      step "Both players check"
+      step "Both players bet"
       game = with \
-        {:ok, game} <- Game.apply_action(game, {:check, @player1}),
-        {:ok, game} <- Game.apply_action(game, {:check, @player2}),
+        {:ok, game} <- Game.apply_action(game, {:bet, @player1,20}),
+        {:ok, game} <- Game.apply_action(game, {:bet, @player2, 20}),
         do: game
       assert game.phase == :river
   
