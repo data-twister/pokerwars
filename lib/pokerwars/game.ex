@@ -122,18 +122,31 @@ end
   end
 
   defp game_action({:bet, player, bet}, game) do
-    game = take_bet(game, {player, bet})
+    game =  case current_player?(player, game) do
+      true-> take_bet(game, {player, bet})
+      false -> game
+    end
+    
     {:ok, game}
   end
 
   defp game_action({:raise, player, bet}, game) do
     raised_amt = game.bet + bet
-    game = take_bet(game, {player, raised_amt})
+    game =  case current_player?(player, game) do
+      true-> take_bet(game, {player, raised_amt})
+      false -> game
     {:ok, game}
+  end
+  end
+
+  defp current_player?(p,game) do
+    true
   end
 
   defp game_action({:check, player}, game) do
 
+    game =  case current_player?(player, game) do
+true->
     current_player = game.current_player
 
     case current_player < Enum.count(game.players) - 1 do
@@ -147,8 +160,9 @@ end
     false -> 
     next_phase(game)
     end
-    
+  false -> game
   end
+end
 
   defp game_action({:fold, player}, game) do
 
