@@ -17,11 +17,12 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:join, @player1}),
         {:ok, game} <- Game.apply_action(game, {:join, @player2}),
         do: game
+      assert length(game.players) == 2
       assert game.status == :ready_to_start
   
        step "The game is started"
       {:ok, game} = Game.apply_action(game, {:start_game})
-      assert game.status == :pre_flop
+      assert game.phase == :pre_flop
   
       #  step "The players pay small and big blinds automatically"
       # assert [90, 80] == Enum.map(game.players, &(&1.stack))
@@ -34,7 +35,7 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player1}),
         {:ok, game} <- Game.apply_action(game, {:check, @player2}),
         do: game
-      assert game.status == :flop
+      assert game.phase == :flop
   
        step "There are 3 cards on the table"
       assert length(game.hole_cards) == 3
@@ -44,7 +45,7 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player1}),
         {:ok, game} <- Game.apply_action(game, {:check, @player2}),
         do: game
-      assert game.status == :turn
+      assert game.phase == :turn
   
        step "There are 4 cards on the table"
       assert length(game.hole_cards) == 4
@@ -54,9 +55,17 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player1}),
         {:ok, game} <- Game.apply_action(game, {:check, @player2}),
         do: game
-      assert game.status == :river
+      assert game.phase == :river
   
-       step "There are 5 cards on the table"
+      step "There are 5 cards on the table"
       assert length(game.hole_cards) == 5
+
+      step "the game is over"
+      game = with \
+        {:ok, game} <- Game.apply_action(game, {:check, @player1}),
+        {:ok, game} <- Game.apply_action(game, {:check, @player2}),
+        do: game
+      assert game.phase == :game_over
+
     end
   end

@@ -62,7 +62,7 @@ defmodule Pokerwars.Game do
     deck = Deck.shuffle(game.original_deck)
     {result, deck} = Deck.take(deck, 3, true)
 
-    {:ok, %{game | bet: 0,  status: :running, phase: :turn, current_player: 0, hole_cards: result, current_deck: deck}}
+    {:ok, %{game | bet: 0,  status: :running, phase: :flop, current_player: 0, hole_cards: result, current_deck: deck}}
   end
   defp next_phase(%__MODULE__{status: :running, phase: :flop, players: players, hole_cards: hole_cards, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players}} = game)
   do
