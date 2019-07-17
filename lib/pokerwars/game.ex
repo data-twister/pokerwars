@@ -5,11 +5,16 @@ defmodule Pokerwars.Game do
 
   @moduledoc """
   This module represents a game being played
-  rules: ante: the min incement amount one must bid per round also known as min raise, limit: the type of game no_limit or limit, button is the dealer, blinds start at players[button] + 1
+  rules:  limit: the type of game none or fixed or , blinds start at players + 1, the we pop the head off players at end of round
+  
+  A fixed limit Texas Hold'em betting round ends when two conditions are met:
+
+All players have had a chance to act.
+All players who haven't folded have bet the same amount of money for the round.
   """
 
 
-  defstruct  hash: nil, players: [], status: :waiting_for_players, round: :waiting_for_players, deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20, ante: 5, min_players: 2, max_players: 8, limit: nil}, board: [], current_player: 0,  winner: nil, available_actions: [:fold, :bet, :check]
+  defstruct  hash: nil, players: [], status: :waiting_for_players, round: :waiting_for_players, deck: nil, bet: 0, pot: 0, rules: %{small_blind: 10, big_blind: 20,  min_players: 2, max_players: 10, limit: :fixed}, board: [], current_player: 0,  winner: nil, available_actions: [:fold, :call, :raise]
 
   def new(deck \\ Deck.in_order) do
     hash = hash_id()
@@ -72,7 +77,7 @@ defmodule Pokerwars.Game do
 
   defp next_status(game), do: {:ok, game}
 
-  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, ante: ante, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
+  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
   do
     deck = Deck.shuffle(game.deck)
     {result, deck} = Deck.take(deck, 3, true)
@@ -82,7 +87,7 @@ defmodule Pokerwars.Game do
     {:ok, %{game | bet: stay_amt,  status: :running, round: :flop, current_player: 0, board: result, deck: deck}}
   end
 
-  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, ante: ante, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
+  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
   do
     {card, deck} = Deck.deal(game.deck, true)
 
@@ -91,7 +96,7 @@ defmodule Pokerwars.Game do
     {:ok, %{game | bet: stay_amt,  status: :running, round: :turn, current_player: 0, board: [card] ++ board, deck: deck}}
   end
 
-  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, ante: ante, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
+  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
   do
     {card, deck} = Deck.deal(game.deck, true)
     hole = [card] ++ board  
@@ -101,7 +106,7 @@ defmodule Pokerwars.Game do
     {:ok, %{game | bet: stay_amt,  round: :river, current_player: 0, board: hole, deck: deck}}
   end
 
-  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, ante: ante, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
+  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
   do
 
     stay_amt = game.rules.big_blind
@@ -109,7 +114,7 @@ defmodule Pokerwars.Game do
     {:ok, %{game |  bet: stay_amt, current_player: 0, round: :showdown }}
   end
 
-  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, ante: ante, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
+  defp next_round(%__MODULE__{status: :running, round: :pre_flop, players: players, rules: %{small_blind: small_blind, big_blind: big_blind,  min_players: min_players, max_players: max_players, limit: limit}, available_actions: available_actions, bet: bet, board: board, current_player: current_player, deck: deck, hash: hash, pot: pot, winner: winner} = game)
   do
 
     winner = Ranker.decide_winners(players)

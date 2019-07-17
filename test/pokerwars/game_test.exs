@@ -28,13 +28,13 @@ defmodule Pokerwars.GameTest do
        {:ok, game} = Game.apply_action(game, {:start_game})
       assert game.round == :pre_flop
   
-       step "Both players can see 2 cards"
-      assert 4 == length(Enum.map(game.players, &(&1.hand)))
+      #  step "Both players can see 2 cards"
+      # assert 4 == length(Enum.map(game.players, &(&1.hand)))
   
-       step "All players bet"
+       step "Player3 raises the bet by 10 and player 4 calls it"
       game = with \
-        {:ok, game} <- Game.apply_action(game, {:bet, @player3, 20}),
-        {:ok, game} <- Game.apply_action(game, {:bet, @player4,20}),
+        {:ok, game} <- Game.apply_action(game, {:raise, @player3, 10}),
+        {:ok, game} <- Game.apply_action(game, {:call, @player4}),
         do: game
         assert game.bet == 20
         assert [10,20,20,20] == Enum.map(game.players, &(&1.amount))
