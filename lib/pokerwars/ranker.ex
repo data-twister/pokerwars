@@ -22,4 +22,17 @@ defmodule Pokerwars.Ranker do
     result = result + (rank * :math.pow(100, index*-1))
     _tie_breaking_modifier(others, index+1, result)
   end
+
+  def check_for_winner(game) do
+
+    players = game.players
+
+    counted = Enum.count(players)
+
+    game = case counted < 2 do
+      true -> %{game | status: :game_over, round: :game_over}
+      false -> game
+      end
+
+  end
 end
