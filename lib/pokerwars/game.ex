@@ -5,7 +5,7 @@ defmodule Pokerwars.Game do
 
   @moduledoc """
   This module represents a game being played
-  rules:  limit: the type of game none or fixed or pot, blinds start at players + 1, the we pop the head off players at end of round ans append to
+  rules:  limit: the type of game none or fixed or pot
 
   A fixed limit Texas Hold'em betting round ends when two conditions are met:
 
