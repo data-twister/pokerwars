@@ -14,13 +14,12 @@ defmodule Pokerwars.Helpers do
     max_value = func.(first_result)
 
     results =
-    cond do
-      current_value > max_value -> [head]
-      current_value == max_value -> [head] ++ [first_result] ++ other_results
-      current_value < max_value -> [first_result] ++ other_results
-    end
+      cond do
+        current_value > max_value -> [head]
+        current_value == max_value -> [head] ++ [first_result] ++ other_results
+        current_value < max_value -> [first_result] ++ other_results
+      end
 
     maxes_by(rest, func, results)
   end
 end
-

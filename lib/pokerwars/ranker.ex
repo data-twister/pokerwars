@@ -9,7 +9,7 @@ defmodule Pokerwars.Ranker do
     score = Pokerwars.Hand.score(hand)
 
     score.value +
-    tie_breaking_modifier(score.tie_breaking_ranks)
+      tie_breaking_modifier(score.tie_breaking_ranks)
   end
 
   defp tie_breaking_modifier(ranks) do
@@ -18,21 +18,20 @@ defmodule Pokerwars.Ranker do
 
   defp _tie_breaking_modifier([], _, result), do: result
 
-  defp _tie_breaking_modifier([ rank | others], index, result) do
-    result = result + (rank * :math.pow(100, index*-1))
-    _tie_breaking_modifier(others, index+1, result)
+  defp _tie_breaking_modifier([rank | others], index, result) do
+    result = result + rank * :math.pow(100, index * -1)
+    _tie_breaking_modifier(others, index + 1, result)
   end
 
   def check_for_winner(game) do
-
     players = game.players
 
     counted = Enum.count(players)
 
-    game = case counted < 2 do
-      true -> %{game | status: :game_over, round: :game_over}
-      false -> game
+    game =
+      case counted < 2 do
+        true -> %{game | status: :game_over, round: :game_over}
+        false -> game
       end
-
   end
 end

@@ -32,18 +32,16 @@ defmodule Pokerwars.Score do
   end
 
   def flush(kickers) do
-    sorted_kickers = kickers
-    |> Enum.sort
-    |> Enum.reverse
+    sorted_kickers =
+      kickers
+      |> Enum.sort()
+      |> Enum.reverse()
 
     %Score{name: :flush, value: 6, tie_breaking_ranks: sorted_kickers}
   end
 
   def straight(primary_rank) do
-    %Score{
-      name: :straight,
-      value: 5,
-      tie_breaking_ranks: [primary_rank]}
+    %Score{name: :straight, value: 5, tie_breaking_ranks: [primary_rank]}
   end
 
   def three_of_a_kind(primary_rank, kickers) do
