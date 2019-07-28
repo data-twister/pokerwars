@@ -4,35 +4,55 @@ defmodule Pokerwars.Status do
 
   require Logger
 
-  def next_status(
+  def next(
         %Game{
-          status: :waiting_for_players,
+          hash: hash,
           players: players,
+          status: :waiting_for_players,
+          round: round,
+          deck: deck,
+          bet: bet,
+          pot: pot,
           rules: %{
             small_blind: small_blind,
             big_blind: big_blind,
             min_players: min_players,
-            max_players: max_players
-          }
+            max_players: max_players,
+            limit: limit
+          },
+          board: board,
+          current_player: current_player,
+          winner: winner,
+          available_actions: available_actions
         } = game
       )
       when length(players) == min_players do
     {:ok, %{game | status: :ready_to_start, round: :ready_to_start}}
   end
 
-  def next_status(game), do: {:ok, game}
+  def next(game), do: {:ok, game}
 
   def waiting_for_players(
         {:join, player},
-        %{
+        %Game{
+          hash: hash,
           players: players,
           status: status,
+          round: round,
+          deck: deck,
+          bet: bet,
+          pot: pot,
           rules: %{
             small_blind: small_blind,
             big_blind: big_blind,
             min_players: min_players,
-            max_players: max_players
-          }
+            max_players: max_players,
+            limit: limit
+          },
+          board: board,
+          current_player: current_player,
+          winner: winner,
+          available_actions: available_actions
         } = game
       )
       when length(players) < max_players do

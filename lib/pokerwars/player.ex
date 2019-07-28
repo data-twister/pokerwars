@@ -1,6 +1,7 @@
 defmodule Pokerwars.Player do
   defstruct hash: nil, name: '', hand: [], stack: 0, amount: 0, action: nil
   alias Pokerwars.Player
+  alias Pokerwars.Card
   require Logger
 
   def create(name, stack \\ 0) do
@@ -26,7 +27,7 @@ defmodule Pokerwars.Player do
   end
 
   def add_card_to_hand(%Player{hand: hand} = player, card) do
-    IO.puts(to_string(card.rank) <> " was added to " <> player.name <> "s hand")
+    IO.puts(Card.display(card) <> " was added to " <> player.name <> "s hand")
     %{player | hand: hand ++ [card]}
   end
 
@@ -51,13 +52,13 @@ defmodule Pokerwars.Player do
     end
   end
 
-  defp current?(p, game) do
+  def current?(p, game) do
     index = Enum.find_index(game.players, fn x -> x.hash == p.hash end)
 
     index == game.current_player
   end
 
-  defp current(game) do
+  def current(game) do
     Enum.at(game.players, game.current_player)
   end
 end

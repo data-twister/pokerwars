@@ -9,7 +9,7 @@ defmodule Pokerwars.GameTest do
     @player3 Player.create "Marc", 100
     @player4 Player.create "Troy", 100
   
-     test "Running a simple game" do
+     test "Running a simple game where all players fold before the flop" do
       step "We create a game and it is waiting for players"
       game = Game.new
       assert game.status == :waiting_for_players
@@ -28,22 +28,32 @@ defmodule Pokerwars.GameTest do
        {:ok, game} = Game.apply_action(game, {:start_game})
       assert game.round == :pre_flop
   
-      #  step "Both players can see 2 cards"
-      # assert 4 == length(Enum.map(game.players, &(&1.hand)))
-  
-       step @player3.name <> " raises the bet by 10 and " <> @player4.name <> " calls it by placing 30 in the pot"
-      game = with \
-        {:ok, game} <- Game.apply_action(game, {:raise, @player3, 10}),
-        {:ok, game} <- Game.apply_action(game, {:call, @player4}),
-        {:ok, game} <- Game.apply_action(game, {:call, @player1}),
-        {:ok, game} <- Game.apply_action(game, {:call, @player2}),
-        {:ok, game} <- Game.apply_action(game, {:call, @player3}),
-        {:ok, game} <- Game.apply_action(game, {:call, @player4}),
-        do: game
-        assert game.bet == 30
-        assert [30,30,30,30] == Enum.map(game.players, &(&1.amount))
+        step "All players can see 2 cards"
+       assert 4 == length(Enum.map(game.players, &(&1.hand)))
 
-        IO.inspect(game)
+       step "All players fold"
+             game = with \
+         {:ok, game} <- Game.apply_action(game, {:fold, @player3}),
+         {:ok, game} <- Game.apply_action(game, {:fold, @player4}),
+         {:ok, game} <- Game.apply_action(game, {:fold, @player1}),
+         do: game
+         assert Enum.count(game.players) == 1
+         assert game.winner.name == @player2.name
+      #   assert [30,30,30,30] == Enum.map(game.players, &(&1.amount))
+  
+      #  step @player3.name <> " raises the bet by 10 and " <> @player4.name <> " calls it by placing 30 in the pot"
+      # game = with \
+      #   {:ok, game} <- Game.apply_action(game, {:raise, @player3, 10}),
+      #   {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+      #   {:ok, game} <- Game.apply_action(game, {:call, @player1}),
+      #   {:ok, game} <- Game.apply_action(game, {:call, @player2}),
+      #   {:ok, game} <- Game.apply_action(game, {:call, @player3}),
+      #   {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+      #   do: game
+      #   assert game.bet == 30
+      #   assert [30,30,30,30] == Enum.map(game.players, &(&1.amount))
+
+      #   IO.inspect(game)
       
       #   step "Here comes the flop"
       # assert game.round == :flop

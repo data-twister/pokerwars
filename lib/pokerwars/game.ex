@@ -16,7 +16,7 @@ defmodule Pokerwars.Game do
   defstruct hash: nil,
             players: [],
             status: :waiting_for_players,
-            round: :waiting_for_players,
+            round: nil,
             deck: nil,
             bet: 0,
             pot: 0,
@@ -55,19 +55,21 @@ defmodule Pokerwars.Game do
   applies the specified action to the game
   """
   def apply_action(game, action) do
-    run(game.round, game, action)
+    init(game, action)
   end
 
-  defp run(:waiting_for_players, game, action) do
+  defp init(:waiting_for_players, game, action) do
     with {:ok, game} <- Status.waiting_for_players(action, game),
-         {:ok, game} <- Status.next_status(game) do
+         {:ok, game} <- Status.next(game) do
       {:ok, game}
     else
-      err -> err
+      err ->
+        err
+        {:error, err}
     end
   end
 
-  defp run(round, game, action) do
+  defp init(game, action) do
     game_action(action, game)
   end
 
@@ -86,30 +88,37 @@ defmodule Pokerwars.Game do
         false -> 0
       end
 
-    game = %{game | status: :running, round: :pre_flop, current_player: current_player}
+    game = %{
+      game
+      | status: :running,
+        round: :pre_flop,
+        current_player: current_player
+    }
 
     {:ok, game}
   end
 
   defp game_action({:join, player}, game) do
-    Status.waiting_for_players({:join, player}, game)
+    init(:waiting_for_players, game, {:join, player})
   end
 
   @doc """
   Player raise Action, player chooses to raise the bet by x amount 
   """
   defp game_action({:raise, player, amount}, game) do
-    difference = game.bet - player.amount
+    case Player.current?(player, game) do
+      true ->
+        take_bet(game, {player, amount}, :raise)
 
-    raised_amount = difference + amount
+        current_player = game.current_player
 
-    take_bet(game, {player, raised_amount}, :raise)
+        case current_player < Enum.count(game.players) - 1 do
+          true -> next_player(game)
+          false -> next_round?(game)
+        end
 
-    current_player = game.current_player
-
-    case current_player < Enum.count(game.players) - 1 do
-      true -> next_player(game)
-      false -> next_round?(game)
+      false ->
+        {:error, "it is not " <> player.name <> "s turn"}
     end
   end
 
@@ -117,19 +126,17 @@ defmodule Pokerwars.Game do
   Player call Action, player chooses to call the bet 
   """
   defp game_action({:call, player}, game) do
-    difference = game.bet - player.amount
+    case Player.current?(player, game) do
+      true ->
+        game = take_bet(game, {player, game.bet}, :call)
 
-    game =
-      case difference > 0 do
-        true -> take_bet(game, {player, difference}, :call)
-        false -> game
-      end
+        case next_round?(game) do
+          true -> Round.next(game)
+          false -> next_player(game)
+        end
 
-    current_player = game.current_player
-
-    case current_player < Enum.count(game.players) - 1 do
-      true -> next_player(game)
-      false -> next_round?(game)
+      false ->
+        {:error, "it is not " <> player.name <> "s turn"}
     end
   end
 
@@ -137,71 +144,71 @@ defmodule Pokerwars.Game do
   Player fold Action, player chooses to fold his hand and is removed from player list
   """
   defp game_action({:fold, player}, game) do
-    game =
-      case Player.current_player?(player, game) do
-        true ->
-          game =
-            case game.current_player > 0 do
-              true -> %{game | current_player: game.current_player}
-              false -> game
-            end
+    case Player.current?(player, game) do
+      true ->
+        players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
 
-          players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
-          IO.puts(player.name <> " folded")
+        IO.puts(player.name <> " folded")
 
-          game = %{game | players: players}
+        game = %{game | players: players}
 
-          Ranker.check_for_winner(game)
+        {_, game} =
+          case next_round?(game) do
+            true -> Round.next(game)
+            false -> next_player(game)
+          end
 
-        false ->
-          game
-      end
+        Ranker.check_for_winner(game)
 
-    {:ok, game}
+      false ->
+        # IO.puts "Error: it is not " <> player.name <> "s turn"
+        {:error, "it is not " <> player.name <> "s turn"}
+    end
   end
 
   @doc """
   Player Check Action, player chooses to skip his turn without betting
   """
   defp game_action({:check, player}, game) do
-    game =
-      case Player.current_player?(player, game) do
-        true ->
-          current_player = game.current_player
+    case Player.current?(player, game) do
+      true ->
+        case next_round?(game) do
+          true -> Round.next(game)
+          false -> next_player(game)
+        end
 
-          case current_player < Enum.count(game.players) do
-            true ->
-              {_, game} = next_player(game)
-
-              available_actions = available_actions(game)
-
-              {:ok, %{game | available_actions: available_actions}}
-
-            false ->
-              next_round?(game)
-          end
-
-        false ->
-          IO.puts("not the current player")
-          {:ok, game}
-      end
+      false ->
+        # IO.puts("not the current player")
+        {:error, "it is not " <> player.name <> "s turn"}
+    end
   end
 
   @doc """
-  Show the avauilable actions for the current gamestate
+  Show the available_actions for the current game_state
   """
   defp available_actions(game) do
-    player = Player.current_player(game)
+    player = Player.current(game)
 
-    case player.amount > game.bet + 1 do
+    case player.amount > game.bet do
       true -> [:check, :fold, :raise]
       false -> [:fold, :raise]
     end
   end
 
+  defp shuffle_cards(game) do
+    deck = Deck.shuffle(game.deck)
+
+    game = %{
+      game
+      | deck: deck
+    }
+  end
+
   defp deal_hands(game) do
     game
     |> clear_game
+    |> shuffle_cards
+    |> shuffle_cards
     |> deal_cards_to_each_player
     |> deal_cards_to_each_player
   end
@@ -247,13 +254,12 @@ defmodule Pokerwars.Game do
   """
   defp take_bet(game, {player, amount}, action \\ :call) do
     pot = game.pot
-    ca = "raise"
 
     current_player = Player.find(player.hash, game)
 
     amount =
-      case ca do
-        "raise" -> game.bet + amount
+      case action do
+        :raise -> game.bet + amount
         _ -> amount
       end
 
@@ -315,11 +321,47 @@ defmodule Pokerwars.Game do
     {updated_deck, [updated_player | updated_others]}
   end
 
-  defp next_player(game), do: {:ok, %{game | current_player: game.current_player + 1}}
+  def next_player(game) do
+    case game.current_player < Enum.count(game.players) - 1 do
+      true ->
+        game = %{game | current_player: game.current_player + 1}
 
-  defp next_round?(game) do
+        available_actions = available_actions(game)
+
+        game = %{game | available_actions: available_actions}
+
+        {:ok, game}
+
+      false ->
+        #   available_actions = available_actions(game)
+
+        #  game = %{game | available_actions: available_actions}
+
+        {:ok, game}
+    end
+
+    case game.current_player > Enum.count(game.players) - 1 do
+      true ->
+        game = %{game | current_player: 0}
+
+        #     available_actions = available_actions(game)
+
+        #     game = %{game | available_actions: available_actions}
+
+        {:ok, game}
+
+      false ->
+        # available_actions = available_actions(game)
+
+        #    game = %{game | available_actions: available_actions}
+
+        {:ok, game}
+    end
+  end
+
+  def next_round?(game) do
     ## check that all players have met the big blind and have checked, or limit chk
-    IO.puts("checking if we have any open bets before switching to the next round")
+    IO.puts("checking if we have any open bets and we are on the last player of the round")
 
     amounts =
       Enum.map(game.players, fn x ->
@@ -329,8 +371,8 @@ defmodule Pokerwars.Game do
     bets = Enum.reject(amounts, fn x -> x == game.bet end)
 
     case Enum.count(bets) < 1 and game.current_player == Enum.count(game.players) - 1 do
-      true -> Round.next_round(game)
-      false -> {:ok, game}
+      true -> true
+      false -> false
     end
   end
 

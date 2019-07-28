@@ -30,8 +30,15 @@ defmodule Pokerwars.Ranker do
 
     game =
       case counted < 2 do
-        true -> %{game | status: :game_over, round: :game_over}
-        false -> game
+        true ->
+          [winner] = players
+          IO.puts(winner.name <> " is the winner")
+          %{game | status: :game_over, round: :game_over, winner: winner}
+
+        false ->
+          game
       end
+
+    {:ok, game}
   end
 end

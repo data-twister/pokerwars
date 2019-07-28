@@ -51,10 +51,10 @@ defmodule Pokerwars.Card do
     r = card.rank
     cond do
       r in 2..10 -> Integer.to_string(r)
-      r == 11 -> 'J'
-      r == 12 -> 'Q'
-      r == 13 -> 'K'
-      r == 14 -> 'A'
+      r == 11 -> "J"
+      r == 12 -> "Q"
+      r == 13 -> "K"
+      r == 14 -> "A"
     end
   end
 
@@ -77,17 +77,21 @@ defmodule Pokerwars.Card do
       A♡ 2♡ 3♡ 4♡ 5♡ 6♡ 7♡ 8♡ 9♡ 10♡ J♡ Q♡ K♡
       A♧ 2♧ 3♧ 4♧ 5♧ 6♧ 7♧ 8♧ 9♧ 10♧ J♧ Q♧ K♧
   """
-  def display(%__MODULE__{suit: :spades, rank: rank}) do
-    "#{rank |> Atom.to_string |> String.upcase}#{Conf.spade}"
+  def display(%__MODULE__{suit: :spades, rank: rank} = card) do
+    rank =  print_face(card)
+    "#{rank}#{Conf.spade}"
   end
-  def display(%__MODULE__{suit: :diamonds, rank: rank}) do
-    "#{rank |> Atom.to_string |> String.upcase}#{Conf.diamond}"
+  def display(%__MODULE__{suit: :diamonds, rank: rank}  = card) do
+    rank =  print_face(card)
+    "#{rank}#{Conf.diamond}"
   end
-  def display(%__MODULE__{suit: :hearts, rank: rank}) do
-    "#{rank |> Atom.to_string |> String.upcase}#{Conf.heart}"
+  def display(%__MODULE__{suit: :hearts, rank: rank} = card) do
+    rank =  print_face(card)
+    "#{rank}#{Conf.heart}"
   end
-  def display(%__MODULE__{suit: :clubs, rank: rank}) do
-    "#{rank |> Atom.to_string |> String.upcase}#{Conf.club}"
+  def display(%__MODULE__{suit: :clubs, rank: rank} = card) do
+    rank =  print_face(card)
+    "#{rank}#{Conf.club}"
   end
-  def display(%__MODULE__{suit: suit, rank: rank}), do: "Unknown #{rank} of #{suit}"
+  def display(%__MODULE__{suit: suit, rank: rank} = card), do: "Unknown #{rank} of #{suit}"
 end
