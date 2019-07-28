@@ -60,11 +60,11 @@ defmodule Pokerwars.Status do
            player.stack > game.rules.big_blind do
       # Logger.info(player.name <> " has joined the game")
       true ->
-        IO.puts(player.name <> " has joined the game")
+        # IO.puts(player.name <> " has joined the game")
         {:ok, %{game | players: game.players ++ [player]}}
 
       false ->
-        IO.puts(player.name <> " does not have enough chips to join the game")
+        # IO.puts(player.name <> " does not have enough chips to join the game")
         {:ok, game}
     end
   end

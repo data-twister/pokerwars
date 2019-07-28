@@ -6,7 +6,7 @@ defmodule Pokerwars.Player do
 
   def create(name, stack \\ 0) do
     hash = hash_id()
-    IO.puts("player " <> hash <> " was created ")
+    # IO.puts("player " <> hash <> " was created ")
     %Player{hash: hash, name: name, stack: stack, amount: 0}
   end
 
@@ -22,22 +22,22 @@ defmodule Pokerwars.Player do
   end
 
   def clear_hand(%Player{} = player) do
-    IO.puts(player.name <> "s hand cleared")
+    # IO.puts(player.name <> "s hand cleared")
     %{player | hand: []}
   end
 
   def add_card_to_hand(%Player{hand: hand} = player, card) do
-    IO.puts(Card.display(card) <> " was added to " <> player.name <> "s hand")
+    # IO.puts(Card.display(card) <> " was added to " <> player.name <> "s hand")
     %{player | hand: hand ++ [card]}
   end
 
   def find(%Player{} = player, game) do
-    IO.puts(" searching for player hash: " <> player.hash)
+    # IO.puts(" searching for player hash: " <> player.hash)
     Enum.find(game.players, fn x -> x.hash == player.hash end)
   end
 
   def find(hash, game) do
-    IO.puts(" searching for player hash: " <> hash)
+    # IO.puts(" searching for player hash: " <> hash)
     Enum.find(game.players, fn x -> x.hash == hash end)
   end
 

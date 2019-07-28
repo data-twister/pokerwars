@@ -49,7 +49,7 @@ defmodule Pokerwars.Round do
       ) do
     {result, deck} = Deck.take(game.deck, 3, true)
 
-    {:ok, %{game | status: :running, round: :flop, current_player: 0, board: result, deck: deck}}
+    {:ok, %{game | status: :running, round: :flop, current_player: 0, board: result, deck: deck, bet: 0}}
   end
 
   def next(
@@ -76,7 +76,7 @@ defmodule Pokerwars.Round do
       ) do
     {card, deck} = Deck.deal(game.deck, true)
 
-    stay_amt = game.rules.big_blind
+    stay_amt = 0
 
     {:ok,
      %{
@@ -115,7 +115,7 @@ defmodule Pokerwars.Round do
     {card, deck} = Deck.deal(game.deck, true)
     hole = [card] ++ board
 
-    stay_amt = game.rules.big_blind
+    stay_amt = 0
 
     {:ok, %{game | bet: stay_amt, round: :river, current_player: 0, board: hole, deck: deck}}
   end

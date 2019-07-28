@@ -35,17 +35,23 @@ defmodule Pokerwars.GameTest do
         step "All players can see 2 cards"
        assert 4 == length(Enum.map(game.players, &(&1.hand)))
 
-       step "All players call"
+       step "All players call except last player"
              game = with \
          {:ok, game} <- Game.apply_action(game, {:call, @player3}),
          {:ok, game} <- Game.apply_action(game, {:call, @player4}),
          {:ok, game} <- Game.apply_action(game, {:call, @player1}),
          {:ok, game} <- Game.apply_action(game, {:call, @player2}),
          {:ok, game} <- Game.apply_action(game, {:call, @player3}),
-         {:ok, game} <- Game.apply_action(game, {:call, @player4}),
          do: game
          assert game.bet == 20
          assert [20,20,20,20] == Enum.map(game.players, &(&1.amount))
+
+         step "Last player Calls"
+         game = with \
+     {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+     do: game
+     assert game.bet == 0
+     assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
        step "Here comes the flop"
        assert game.round == :flop
@@ -60,8 +66,8 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player3}),
         {:ok, game} <- Game.apply_action(game, {:check, @player4}),
         do: game
-        assert game.bet == 20
-        assert [20,20,20,20] == Enum.map(game.players, &(&1.amount))
+        assert game.bet == 0
+        assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
         step "Here comes the turn"
       assert game.round == :turn
@@ -76,8 +82,8 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player3}),
         {:ok, game} <- Game.apply_action(game, {:check, @player4}),
         do: game
-      assert game.bet == 20
-      assert [20,20,20,20] == Enum.map(game.players, &(&1.amount))
+      assert game.bet == 0
+      assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
       step "Here comes the river"
         assert game.round == :river
@@ -92,13 +98,12 @@ defmodule Pokerwars.GameTest do
         {:ok, game} <- Game.apply_action(game, {:check, @player3}),
         {:ok, game} <- Game.apply_action(game, {:check, @player4}),
         do: game
-        assert game.bet == 20
-        assert [20,20,20,20] == Enum.map(game.players, &(&1.amount))
+        assert game.bet == 0
+        assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
         step "Enter the showdown"
         assert game.round == :showdown
 
-        IO.inspect(game)
     end
 
 

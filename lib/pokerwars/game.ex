@@ -46,7 +46,7 @@ defmodule Pokerwars.Game do
     hash = hash_id()
 
     # Logger.info "game " <> hash <> " was created "
-    IO.puts("game " <> hash <> " was created ")
+    # IO.puts("game " <> hash <> " was created ")
 
     %__MODULE__{rules: rules, deck: deck, hash: hash}
   end
@@ -77,7 +77,7 @@ defmodule Pokerwars.Game do
     case next_round?(game) do
       true -> 
        {_, game } = Round.next(game)
-     #  game = reset_amounts(game)
+       game = reset_amounts(game)
        {:ok, game}
       false -> next_player(game)
     end
@@ -150,7 +150,7 @@ defmodule Pokerwars.Game do
 
         players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
 
-        IO.puts(player.name <> " folded")
+        # IO.puts(player.name <> " folded")
 
        current_player =  case game.current_player > Enum.count(players) - 2 do
           true -> game.current_player - 1
@@ -267,11 +267,11 @@ game
 
     case is_betting? do
       true ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
+        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
         %{game | pot: pot + amount, bet: amount, players: players}
 
       false ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
+        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         %{game | players: players}
     end
   end
@@ -334,8 +334,6 @@ game
   end
 
   def next_round?(game) do
-    ## check that all players have met the big blind and have checked, or limit chk
-    IO.puts("checking if we have any open bets and we are on the last player of the round")
 
     amounts =
       Enum.map(game.players, fn x ->
@@ -346,17 +344,12 @@ game
 
     bet_count = Enum.count(bets)
 
-    IO.inspect(bets, label: "open bets")
-    IO.inspect(game.current_player, label: "game.current_player")
-    IO.inspect(Enum.count(game.players), label: "game.current_player.count")
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
-        IO.puts(" We are eligible to go to the next round")
         true
 
       false ->
-        IO.puts(" We are not eligible to go to the next round")
         false
     end
   end
