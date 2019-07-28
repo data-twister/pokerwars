@@ -73,26 +73,29 @@ defmodule Pokerwars.Game do
     game_action(action, game)
   end
 
+  defp continue(game) do
+    case next_round?(game) do
+      true -> Round.next(game)
+      false -> next_player(game)
+    end
+  end
+
   @doc """
   Player join Action, player joins the game 
   """
   defp game_action({:start_game}, game) do
-    game = deal_hands(game)
-    game = take_blinds(game)
+    game =
+      game
+      |> clear_game
+      |> shuffle_cards
+      |> shuffle_cards
+      |> deal_hands
+      |> take_blinds
 
-    player_count = Enum.count(game.players)
-
-    current_player =
-      case player_count > 2 do
-        true -> 2
-        false -> 0
-      end
 
     game = %{
       game
-      | status: :running,
-        round: :pre_flop,
-        current_player: current_player
+      | round: :pre_flop
     }
 
     {:ok, game}
@@ -108,14 +111,9 @@ defmodule Pokerwars.Game do
   defp game_action({:raise, player, amount}, game) do
     case Player.current?(player, game) do
       true ->
-        take_bet(game, {player, amount}, :raise)
+        game = take_bet(game, {player, amount}, :raise)
 
-        current_player = game.current_player
-
-        case current_player < Enum.count(game.players) - 1 do
-          true -> next_player(game)
-          false -> next_round?(game)
-        end
+        continue(game)
 
       false ->
         {:error, "it is not " <> player.name <> "s turn"}
@@ -130,10 +128,7 @@ defmodule Pokerwars.Game do
       true ->
         game = take_bet(game, {player, game.bet}, :call)
 
-        case next_round?(game) do
-          true -> Round.next(game)
-          false -> next_player(game)
-        end
+        continue(game)
 
       false ->
         {:error, "it is not " <> player.name <> "s turn"}
@@ -152,11 +147,7 @@ defmodule Pokerwars.Game do
 
         game = %{game | players: players}
 
-        {_, game} =
-          case next_round?(game) do
-            true -> Round.next(game)
-            false -> next_player(game)
-          end
+        {_, game} = continue(game)
 
         Ranker.check_for_winner(game)
 
@@ -172,10 +163,7 @@ defmodule Pokerwars.Game do
   defp game_action({:check, player}, game) do
     case Player.current?(player, game) do
       true ->
-        case next_round?(game) do
-          true -> Round.next(game)
-          false -> next_player(game)
-        end
+        continue(game)
 
       false ->
         # IO.puts("not the current player")
@@ -200,53 +188,30 @@ defmodule Pokerwars.Game do
 
     game = %{
       game
-      | deck: deck
+      | deck: deck,
+        status: :running
     }
   end
 
   defp deal_hands(game) do
     game
-    |> clear_game
-    |> shuffle_cards
-    |> shuffle_cards
     |> deal_cards_to_each_player
     |> deal_cards_to_each_player
   end
 
   defp take_blinds(game) do
-    players = game.players
-    rules = game.rules
-    pot = game.pot
 
-    [first_player, second_player | other_players] = players
+    [first_player, second_player | other_players] = game.players
 
-    first_player = %{
-      first_player
-      | stack: first_player.stack - rules.small_blind,
-        action: :bet,
-        amount: rules.small_blind
-    }
+    game = take_bet(game, {first_player, game.rules.small_blind}, :blinds)
 
-    second_player = %{
-      second_player
-      | stack: second_player.stack - rules.big_blind,
-        action: :bet,
-        amount: rules.big_blind
-    }
+    {_, game} = next_player(game)
 
-    new_players = [first_player, second_player | other_players]
+    game = take_bet(game, {second_player, game.rules.big_blind}, :blinds)
 
-    amount_taken = rules.small_blind + rules.big_blind
+    {_, game} = next_player(game)
 
-    IO.puts(
-      "blinds of " <>
-        to_string(game.rules.small_blind) <>
-        "/" <>
-        to_string(game.rules.big_blind) <>
-        " were taken from " <> first_player.name <> " and " <> second_player.name
-    )
-
-    %{game | players: new_players, pot: pot + amount_taken, bet: game.rules.big_blind}
+game
   end
 
   @doc """
@@ -263,15 +228,21 @@ defmodule Pokerwars.Game do
         _ -> amount
       end
 
-    is_betting? = Player.can_bet?(current_player, game, amount)
+    amount_to_take =
+      case action do
+        :raise -> game.bet + amount
+        _ ->  amount - current_player.amount
+      end
+
+    is_betting? = Player.can_bet?(current_player, game, amount_to_take)
 
     players =
       case is_betting? do
         true ->
           Enum.map(game.players, fn p ->
-            case p.hash == player.hash and p.stack > amount do
-              true ->
-                %{player | stack: p.stack - amount, amount: amount, action: action, hand: p.hand}
+            case p.hash == player.hash  do
+              true ->  
+              %{player | stack: p.stack - amount_to_take, amount: amount, action: action, hand: p.hand}
 
               false ->
                 p
@@ -366,12 +337,20 @@ defmodule Pokerwars.Game do
 
     bets = Enum.reject(amounts, fn x -> x == game.bet end)
 
-    case Enum.count(bets) < 1 and game.current_player == Enum.count(game.players) - 1 do
-      true -> 
-        IO.puts " We are eligible to go to the next round"
+    bet_count = Enum.count(bets)
+
+    IO.inspect(bets, label: "open bets")
+    IO.inspect(game.current_player, label: "game.current_player")
+    IO.inspect(Enum.count(game.players) - 1, label: "game.current_player.count")
+
+    case bet_count < 1 and game.current_player < Enum.count(game.players) - 1 do
+      true ->
+        IO.puts(" We are eligible to go to the next round")
         true
-      false ->  IO.puts " We are not eligible to go to the next round"
-      false
+
+      false ->
+        IO.puts(" We are not eligible to go to the next round")
+        false
     end
   end
 

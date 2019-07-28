@@ -1,0 +1,1 @@
+tail -f ~/Projects/elixir/pokerwars/test/test.log
