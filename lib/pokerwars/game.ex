@@ -76,8 +76,9 @@ defmodule Pokerwars.Game do
   defp continue(game) do
     case next_round?(game) do
       true -> 
-       # game = reset_amounts(game)
-        Round.next(game)
+       {_, game } = Round.next(game)
+     #  game = reset_amounts(game)
+       {:ok, game}
       false -> next_player(game)
     end
   end
