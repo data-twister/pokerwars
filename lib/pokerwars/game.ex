@@ -75,7 +75,9 @@ defmodule Pokerwars.Game do
 
   defp continue(game) do
     case next_round?(game) do
-      true -> Round.next(game)
+      true -> 
+       # game = reset_amounts(game)
+        Round.next(game)
       false -> next_player(game)
     end
   end
@@ -135,17 +137,26 @@ defmodule Pokerwars.Game do
     end
   end
 
+  ##todo calc fun for whos turn it is
+   ## fold, get the current player, chk if he is the last, if so we subtrack 1 from the current player
+
   @doc """
   Player fold Action, player chooses to fold his hand and is removed from player list
   """
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
+
         players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
 
         IO.puts(player.name <> " folded")
 
-        game = %{game | players: players}
+       current_player =  case game.current_player > Enum.count(players) - 2 do
+          true -> game.current_player - 1
+          false -> game.current_player
+        end
+
+        game = %{game | players: players, current_player: current_player}
 
         {_, game} = continue(game)
 
@@ -259,6 +270,7 @@ game
         %{game | pot: pot + amount, bet: amount, players: players}
 
       false ->
+        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         %{game | players: players}
     end
   end
@@ -267,6 +279,11 @@ game
     players = Enum.map(game.players, &Player.clear_hand/1)
     deck = Deck.in_order()
     %{game | deck: deck, players: players}
+  end
+
+  defp reset_amounts(game) do
+    players = Enum.map(game.players, &Player.reset/1)
+    %{game | players: players}
   end
 
   defp deal_cards_to_each_player(%{players: players, deck: deck} = game) do
@@ -304,25 +321,14 @@ game
         {:ok, game}
 
       false ->
-        case game.current_player > Enum.count(game.players) - 1 do
-          true ->
-            game = %{game | current_player: 0}
+             game = %{game | current_player: 0}
 
-            available_actions = available_actions(game)
+             available_actions = available_actions(game)
 
-            game = %{game | available_actions: available_actions}
+             game = %{game | available_actions: available_actions}
 
             {:ok, game}
-
-          false ->
-            # game = %{game | current_player: game.current_player}
-
-            # available_actions = available_actions(game)
-
-            # game = %{game | available_actions: available_actions}
-
-            {:ok, game}
-        end
+       
     end
   end
 
@@ -341,9 +347,9 @@ game
 
     IO.inspect(bets, label: "open bets")
     IO.inspect(game.current_player, label: "game.current_player")
-    IO.inspect(Enum.count(game.players) - 1, label: "game.current_player.count")
+    IO.inspect(Enum.count(game.players), label: "game.current_player.count")
 
-    case bet_count < 1 and game.current_player < Enum.count(game.players) - 1 do
+    case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
         IO.puts(" We are eligible to go to the next round")
         true

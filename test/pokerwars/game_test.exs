@@ -40,6 +40,9 @@ defmodule Pokerwars.GameTest do
          {:ok, game} <- Game.apply_action(game, {:call, @player3}),
          {:ok, game} <- Game.apply_action(game, {:call, @player4}),
          {:ok, game} <- Game.apply_action(game, {:call, @player1}),
+         {:ok, game} <- Game.apply_action(game, {:call, @player2}),
+         {:ok, game} <- Game.apply_action(game, {:call, @player3}),
+         {:ok, game} <- Game.apply_action(game, {:call, @player4}),
          do: game
          assert game.bet == 20
          assert [20,20,20,20] == Enum.map(game.players, &(&1.amount))
@@ -66,7 +69,7 @@ defmodule Pokerwars.GameTest do
        step "There are 4 cards on the table"
       assert length(game.board) == 4
 
-      step "All players checkk"
+      step "All players check"
       game = with \
         {:ok, game} <- Game.apply_action(game, {:check, @player1}),
         {:ok, game} <- Game.apply_action(game, {:check, @player2}),
@@ -94,6 +97,8 @@ defmodule Pokerwars.GameTest do
 
         step "Enter the showdown"
         assert game.round == :showdown
+
+        IO.inspect(game)
     end
 
 

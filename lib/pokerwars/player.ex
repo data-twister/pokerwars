@@ -46,7 +46,7 @@ defmodule Pokerwars.Player do
   end
 
   def can_bet?(%Player{} = player, game, amount) do
-    case player.stack > game.bet and amount > game.bet - 1 and amount < player.stack do
+    case  amount < player.stack do
       true -> true
       false -> false
     end
@@ -60,5 +60,9 @@ defmodule Pokerwars.Player do
 
   def current(game) do
     Enum.at(game.players, game.current_player)
+  end
+
+  def reset(%Player{} = player) do
+    %{player | amount: 0, action: nil}
   end
 end
