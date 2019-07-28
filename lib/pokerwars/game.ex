@@ -367,8 +367,11 @@ defmodule Pokerwars.Game do
     bets = Enum.reject(amounts, fn x -> x == game.bet end)
 
     case Enum.count(bets) < 1 and game.current_player == Enum.count(game.players) - 1 do
-      true -> true
-      false -> false
+      true -> 
+        IO.puts " We are eligible to go to the next round"
+        true
+      false ->  IO.puts " We are not eligible to go to the next round"
+      false
     end
   end
 
