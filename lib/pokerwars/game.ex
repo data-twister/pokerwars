@@ -333,29 +333,25 @@ defmodule Pokerwars.Game do
         {:ok, game}
 
       false ->
-        #   available_actions = available_actions(game)
+        case game.current_player > Enum.count(game.players) - 1 do
+          true ->
+            game = %{game | current_player: 0}
 
-        #  game = %{game | available_actions: available_actions}
+            available_actions = available_actions(game)
 
-        {:ok, game}
-    end
+            game = %{game | available_actions: available_actions}
 
-    case game.current_player > Enum.count(game.players) - 1 do
-      true ->
-        game = %{game | current_player: 0}
+            {:ok, game}
 
-        #     available_actions = available_actions(game)
+          false ->
+            # game = %{game | current_player: game.current_player}
 
-        #     game = %{game | available_actions: available_actions}
+            # available_actions = available_actions(game)
 
-        {:ok, game}
+            # game = %{game | available_actions: available_actions}
 
-      false ->
-        # available_actions = available_actions(game)
-
-        #    game = %{game | available_actions: available_actions}
-
-        {:ok, game}
+            {:ok, game}
+        end
     end
   end
 
