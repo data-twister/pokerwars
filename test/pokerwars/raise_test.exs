@@ -46,10 +46,10 @@ defmodule Pokerwars.GameTest.Raise do
     assert game.bet == 50
     assert [50, 50, 50, 50] == Enum.map(game.players, & &1.amount)
 
-    step("Last player Calls")
+    step("Last player Checks")
 
     game =
-      with {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+      with {:ok, game} <- Game.apply_action(game, {:check, @player4}),
            do: game
 
     assert game.bet == 0
