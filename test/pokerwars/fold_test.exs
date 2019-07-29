@@ -3,8 +3,6 @@ defmodule Pokerwars.GameTest.Fold do
     import Pokerwars.TestHelpers
   
      alias Pokerwars.{Game, Player}
-
-     IO.puts "+++ ---Starting Fold Test--- +++ \n"
   
     @player1 Player.create "Mithereal", 100
     @player2 Player.create "Ron", 100

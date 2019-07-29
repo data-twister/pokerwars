@@ -267,11 +267,11 @@ game
 
     case is_betting? do
       true ->
-        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
+        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
         %{game | pot: pot + amount, bet: amount, players: players}
 
       false ->
-        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
+        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         %{game | players: players}
     end
   end
@@ -334,6 +334,8 @@ game
   end
 
   def next_round?(game) do
+    ## check that all players have met the big blind and have checked, or limit chk
+    # IO.puts("checking if we have any open bets and we are on the last player of the round")
 
     amounts =
       Enum.map(game.players, fn x ->
@@ -344,12 +346,17 @@ game
 
     bet_count = Enum.count(bets)
 
+    # IO.inspect(bet_count, label: "open bets")
+    # IO.inspect(game.current_player + 1, label: "current_player")
+    # IO.inspect(Enum.count(game.players), label: "total players")
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
+        # IO.puts(" We are eligible to go to the next round")
         true
 
       false ->
+        # IO.puts(" We are not eligible to go to the next round")
         false
     end
   end

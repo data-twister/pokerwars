@@ -142,7 +142,9 @@ defmodule Pokerwars.Round do
           winner: winner
         } = game
       ) do
-    {:ok, %{game | current_player: 0, round: :showdown}}
+        game = %{game | current_player: 0, round: :showdown}
+        next(game)
+
   end
 
   def next(
@@ -167,7 +169,12 @@ defmodule Pokerwars.Round do
           winner: winner
         } = game
       ) do
-    winner = Ranker.decide_winners(players)
+    winner = List.first(game.players)
+
+    IO.puts winner.name <> " is the winner"
+    
+    #Ranker.decide_winners(players)
+
 
     {:ok, %{game | winner: winner, round: :game_over, status: :game_over}}
   end

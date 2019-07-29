@@ -3,8 +3,6 @@ defmodule Pokerwars.GameTest do
     import Pokerwars.TestHelpers
   
      alias Pokerwars.{Game, Player}
-
-     IO.puts "+++ ---Starting Game Test--- +++ \n"
   
     @player1 Player.create "Mithereal", 100
     @player2 Player.create "Ron", 100
@@ -100,10 +98,8 @@ defmodule Pokerwars.GameTest do
         do: game
         assert game.bet == 0
         assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
-
-        step "Enter the showdown"
-        assert game.round == :showdown
-
+        assert game.round == :game_over
+# IO.inspect game
     end
 
 

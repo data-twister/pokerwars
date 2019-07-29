@@ -8,7 +8,6 @@ defmodule Pokerwars.GameTest.CurrentPlayer do
     @player3 Player.create "Marc", 100
     @player4 Player.create "Troy", 100
 
-    IO.puts "+++ ---Starting current Player Test--- +++ \n"
 
     test "Current Player" do
         step "We create a game and it is waiting for players"
@@ -29,10 +28,11 @@ defmodule Pokerwars.GameTest.CurrentPlayer do
          {:ok, game} = Game.apply_action(game, {:start_game})
         assert game.round == :pre_flop
         
-        step "Players attempt to do an action"
+        step "Wrong Player attempt to do an action"
         {status, _} = Game.apply_action(game, {:fold, @player4})
         assert status == :error
 
+        step "Correct Player attempt to do an action"
         {status, _} = Game.apply_action(game, {:fold, @player3})
         assert status == :ok
   end
