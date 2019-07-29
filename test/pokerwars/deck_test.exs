@@ -42,12 +42,11 @@ defmodule Pokerwars.DeckTest do
   test "it deals a single card" do
     {card, new_deck} =
       Deck.in_order()
-      |> Deck.deal
+      |> Deck.deal()
 
     assert Card.print(card) == "2h"
 
-    {card, _} =
-      Deck.deal(new_deck)
+    {card, _} = Deck.deal(new_deck)
 
     assert Card.print(card) == "3h"
   end
@@ -55,7 +54,7 @@ defmodule Pokerwars.DeckTest do
   # test "it burns a card then deals a single card" do
   #   {card, new_deck} =
   #    deck = Deck.in_order()
-     
+
   #     Deck.deal deck, true
 
   #   assert Card.print(card) == "3h"
