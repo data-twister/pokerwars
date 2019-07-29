@@ -75,11 +75,13 @@ defmodule Pokerwars.Game do
 
   defp continue(game) do
     case next_round?(game) do
-      true -> 
-       {_, game } = Round.next(game)
-       game = reset_amounts(game)
-       {:ok, game}
-      false -> next_player(game)
+      true ->
+        {_, game} = Round.next(game)
+        game = reset_amounts(game)
+        {:ok, game}
+
+      false ->
+        next_player(game)
     end
   end
 
@@ -94,7 +96,6 @@ defmodule Pokerwars.Game do
       |> shuffle_cards
       |> deal_hands
       |> take_blinds
-
 
     game = %{
       game
@@ -138,8 +139,8 @@ defmodule Pokerwars.Game do
     end
   end
 
-  ##todo calc fun for whos turn it is
-   ## fold, get the current player, chk if he is the last, if so we subtrack 1 from the current player
+  ## todo calc fun for whos turn it is
+  ## fold, get the current player, chk if he is the last, if so we subtrack 1 from the current player
 
   @doc """
   Player fold Action, player chooses to fold his hand and is removed from player list
@@ -147,15 +148,15 @@ defmodule Pokerwars.Game do
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
-
         players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
 
         # IO.puts(player.name <> " folded")
 
-       current_player =  case game.current_player > Enum.count(players) - 2 do
-          true -> game.current_player - 1
-          false -> game.current_player
-        end
+        current_player =
+          case game.current_player > Enum.count(players) - 2 do
+            true -> game.current_player - 1
+            false -> game.current_player
+          end
 
         game = %{game | players: players, current_player: current_player}
 
@@ -212,7 +213,6 @@ defmodule Pokerwars.Game do
   end
 
   defp take_blinds(game) do
-
     [first_player, second_player | other_players] = game.players
 
     game = take_bet(game, {first_player, game.rules.small_blind}, :blinds)
@@ -223,7 +223,7 @@ defmodule Pokerwars.Game do
 
     {_, game} = next_player(game)
 
-game
+    game
   end
 
   @doc """
@@ -243,7 +243,7 @@ game
     amount_to_take =
       case action do
         :raise -> game.bet + amount
-        _ ->  amount - current_player.amount
+        _ -> amount - current_player.amount
       end
 
     is_betting? = Player.can_bet?(current_player, game, amount_to_take)
@@ -252,9 +252,15 @@ game
       case is_betting? do
         true ->
           Enum.map(game.players, fn p ->
-            case p.hash == player.hash  do
-              true ->  
-              %{player | stack: p.stack - amount_to_take, amount: amount, action: action, hand: p.hand}
+            case p.hash == player.hash do
+              true ->
+                %{
+                  player
+                  | stack: p.stack - amount_to_take,
+                    amount: amount,
+                    action: action,
+                    hand: p.hand
+                }
 
               false ->
                 p
@@ -322,14 +328,13 @@ game
         {:ok, game}
 
       false ->
-             game = %{game | current_player: 0}
+        game = %{game | current_player: 0}
 
-             available_actions = available_actions(game)
+        available_actions = available_actions(game)
 
-             game = %{game | available_actions: available_actions}
+        game = %{game | available_actions: available_actions}
 
-            {:ok, game}
-       
+        {:ok, game}
     end
   end
 

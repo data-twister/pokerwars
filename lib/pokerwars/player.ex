@@ -46,7 +46,7 @@ defmodule Pokerwars.Player do
   end
 
   def can_bet?(%Player{} = player, game, amount) do
-    case  amount < player.stack do
+    case amount < player.stack do
       true -> true
       false -> false
     end

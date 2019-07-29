@@ -51,8 +51,8 @@ defmodule Pokerwars.GameTest do
      assert game.bet == 0
      assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
-       step "Here comes the flop"
-       assert game.round == :flop
+      step "Here comes the flop"
+      assert game.round == :flop
 
        step "There are 3 cards on the table"
        assert length(game.board) == 3
@@ -84,7 +84,7 @@ defmodule Pokerwars.GameTest do
       assert [0,0,0,0] == Enum.map(game.players, &(&1.amount))
 
       step "Here comes the river"
-        assert game.round == :river
+      assert game.round == :river
   
       step "There are 5 cards on the table"
       assert length(game.board) == 5

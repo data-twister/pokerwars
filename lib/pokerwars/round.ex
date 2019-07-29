@@ -49,7 +49,16 @@ defmodule Pokerwars.Round do
       ) do
     {result, deck} = Deck.take(game.deck, 3, true)
 
-    {:ok, %{game | status: :running, round: :flop, current_player: 0, board: result, deck: deck, bet: 0}}
+    {:ok,
+     %{
+       game
+       | status: :running,
+         round: :flop,
+         current_player: 0,
+         board: result,
+         deck: deck,
+         bet: 0
+     }}
   end
 
   def next(
@@ -142,9 +151,8 @@ defmodule Pokerwars.Round do
           winner: winner
         } = game
       ) do
-        game = %{game | current_player: 0, round: :showdown}
-        next(game)
-
+    game = %{game | current_player: 0, round: :showdown}
+    next(game)
   end
 
   def next(
@@ -171,10 +179,9 @@ defmodule Pokerwars.Round do
       ) do
     winner = List.first(game.players)
 
-    IO.puts winner.name <> " is the winner"
-    
-    #Ranker.decide_winners(players)
+    IO.puts(winner.name <> " is the winner")
 
+    # Ranker.decide_winners(players)
 
     {:ok, %{game | winner: winner, round: :game_over, status: :game_over}}
   end
