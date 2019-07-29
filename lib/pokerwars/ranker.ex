@@ -1,5 +1,6 @@
 defmodule Pokerwars.Ranker do
   alias Pokerwars.Helpers
+  alias Pokerwars.Player
 
   def decide_winners(hands) do
     Helpers.maxes_by(hands, &calculate_numeric_score/1)
@@ -36,7 +37,14 @@ defmodule Pokerwars.Ranker do
           %{game | status: :game_over, round: :game_over, winner: winner}
 
         false ->
-          game
+            scores = Enum.map(game.players, fn(x) -> 
+           {Player.score(x), x}
+          end) 
+          
+          {_, winner } = List.first(scores)
+          IO.puts(winner.name <> " is the winner")
+          %{game | status: :game_over, round: :game_over, winner: winner}
+
       end
 
     {:ok, game}

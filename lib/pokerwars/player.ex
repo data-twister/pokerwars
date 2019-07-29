@@ -2,6 +2,7 @@ defmodule Pokerwars.Player do
   defstruct hash: nil, name: '', hand: [], stack: 0, amount: 0, action: nil
   alias Pokerwars.Player
   alias Pokerwars.Card
+  alias Pokerwars.Ranker
   require Logger
 
   def create(name, stack \\ 0) do
@@ -65,4 +66,9 @@ defmodule Pokerwars.Player do
   def reset(%Player{} = player) do
     %{player | amount: 0, action: nil}
   end
+
+  def score(%Player{} = player) do
+    Ranker.calculate_numeric_score(player.hand)
+  end
+
 end

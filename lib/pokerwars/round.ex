@@ -177,11 +177,8 @@ defmodule Pokerwars.Round do
           winner: winner
         } = game
       ) do
-    winner = List.first(game.players)
 
-    IO.puts(winner.name <> " is the winner")
-
-    # Ranker.decide_winners(players)
+    winner =  Ranker.check_for_winner(game)
 
     {:ok, %{game | winner: winner, round: :game_over, status: :game_over}}
   end
