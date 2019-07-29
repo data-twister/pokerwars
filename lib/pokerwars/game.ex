@@ -30,7 +30,8 @@ defmodule Pokerwars.Game do
             board: [],
             current_player: 0,
             winner: nil,
-            available_actions: [:fold, :call, :raise]
+            available_actions: [:fold, :call, :raise],
+            message: nil
 
   defp hash_id(number \\ 20) do
     Base.encode64(:crypto.strong_rand_bytes(number))
@@ -123,8 +124,8 @@ defmodule Pokerwars.Game do
         end
         
 
-      false ->
-        {:error, "it is not " <> player.name <> "s turn"}
+      false -> game = %{game | message: "it is not " <> player.name <> "s turn" }
+        {:error, game }
     end
   end
 
@@ -142,7 +143,8 @@ defmodule Pokerwars.Game do
         end
 
       false ->
-        {:error, "it is not " <> player.name <> "s turn"}
+        game = %{game | message: "it is not " <> player.name <> "s turn" }
+        {:error, game }
     end
   end
 
@@ -173,7 +175,8 @@ defmodule Pokerwars.Game do
 
       false ->
         # IO.puts "Error: it is not " <> player.name <> "s turn"
-        {:error, "it is not " <> player.name <> "s turn"}
+        game = %{game | message: "it is not " <> player.name <> "s turn" }
+        {:error, game }
     end
   end
 
@@ -187,7 +190,8 @@ defmodule Pokerwars.Game do
 
       false ->
         # IO.puts("not the current player")
-        {:error, "it is not " <> player.name <> "s turn"}
+        game = %{game | message: "it is not " <> player.name <> "s turn" }
+        {:error, game }
     end
   end
 

@@ -95,16 +95,16 @@ assert status == :error
     step("There are 4 cards on the table")
     assert length(game.board) == 4
 
-    step("Player 1 raises by 20 others call")
+    step("Player 1 raises by 1 others call")
 
     game =
-      with {:ok, game} <- Game.apply_action(game, {:raise, @player1, 20}),
+      with {:ok, game} <- Game.apply_action(game, {:raise, @player1, 1}),
            {:ok, game} <- Game.apply_action(game, {:call, @player2}),
            {:ok, game} <- Game.apply_action(game, {:call, @player3}),
            do: game
 
-    assert game.bet == 20
-    assert [20, 20, 20, 0] == Enum.map(game.players, & &1.amount)
+    assert game.bet == 1
+    assert [1, 1, 1, 0] == Enum.map(game.players, & &1.amount)
    
     step("Last player Calls")
     game =

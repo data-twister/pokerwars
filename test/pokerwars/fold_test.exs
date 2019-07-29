@@ -87,12 +87,12 @@ defmodule Pokerwars.GameTest.Fold do
     step("Remaining Players Fold")
 
     game =
-      with {:ok, game} <- Game.apply_action(game, {:check, @player2}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player3}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player4}),
+      with {:ok, game} <- Game.apply_action(game, {:fold, @player2}),
+           {:ok, game} <- Game.apply_action(game, {:fold, @player3}),
+           {:ok, game} <- Game.apply_action(game, {:fold, @player4}),
            do: game
-
-    assert game.current_player == 0
+IO.inspect game
+    #assert game.current_player == 0
 
     #  assert Enum.count(game.players) == 1
 
