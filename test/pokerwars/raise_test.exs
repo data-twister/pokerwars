@@ -1,4 +1,4 @@
-defmodule Pokerwars.GameTest do
+defmodule Pokerwars.GameTest.Raise do
   use ExUnit.Case, async: true
   import Pokerwars.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Pokerwars.GameTest do
   @player3 Player.create("Marc", 100)
   @player4 Player.create("Troy", 100)
 
-  test "Players check for all rounds" do
+  test "game raise test" do
     step("We create a game and it is waiting for players")
     game = Game.new()
     assert game.status == :waiting_for_players
@@ -33,18 +33,18 @@ defmodule Pokerwars.GameTest do
     step("All players can see 2 cards")
     assert 4 == length(Enum.map(game.players, & &1.hand))
 
-    step("All players call except last player")
+    step("Some players call last player raises")
 
     game =
       with {:ok, game} <- Game.apply_action(game, {:call, @player3}),
-           {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+           {:ok, game} <- Game.apply_action(game, {:raise, @player4, 30}),
            {:ok, game} <- Game.apply_action(game, {:call, @player1}),
            {:ok, game} <- Game.apply_action(game, {:call, @player2}),
            {:ok, game} <- Game.apply_action(game, {:call, @player3}),
            do: game
 
-    assert game.bet == 20
-    assert [20, 20, 20, 20] == Enum.map(game.players, & &1.amount)
+    assert game.bet == 50
+    assert [50, 50, 50, 50] == Enum.map(game.players, & &1.amount)
 
     step("Last player Calls")
 
