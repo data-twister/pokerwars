@@ -37,14 +37,28 @@ defmodule Pokerwars.Ranker do
           %{game | status: :game_over, round: :game_over, winner: winner}
 
         false ->
-            scores = Enum.map(game.players, fn(x) -> 
-           {Player.score(x), x}
-          end) 
-          
-          {_, winner } = List.first(scores)
-          IO.puts(winner.name <> " is the winner")
-          %{game | status: :game_over, round: :game_over, winner: winner}
+          case counted == 2 and Enum.member?([:showdown], game.round) do
+            true ->
+              hands = Enum.map(game.players,fn(x) -> x.hand end)
+              winning_hands = decide_winners(hands)
+              IO.inspect winning_hands, label: "winners"
+              # winners =
+              #   Enum.reject(game.players, fn x ->
+              #     false == Enum.member?(winning_hands, x.hand)
+              #   end)
 
+              #   case Enum.count(winners) > 0 do
+              #     true -> IO.puts("there are multiplewinners")
+              #     false ->  winner = List.first winners
+              #     IO.puts(winner.name <> " is the winner")
+              #   end
+
+             
+              %{game | status: :game_over, round: :game_over, winner: nil}
+game
+            false ->
+              game
+          end
       end
 
     {:ok, game}

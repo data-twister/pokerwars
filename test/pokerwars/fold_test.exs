@@ -26,7 +26,7 @@ defmodule Pokerwars.GameTest.Fold do
     assert length(game.players) == 4
     assert game.status == :ready_to_start
 
-    step("The game is started")
+    step("Game Start")
     {:ok, game} = Game.apply_action(game, {:start_game})
     assert game.round == :pre_flop
 
@@ -43,5 +43,9 @@ defmodule Pokerwars.GameTest.Fold do
 
     assert Enum.count(game.players) == 1
     assert game.winner.name == @player2.name
+
+   step("Game Over")
+    assert game.round == :game_over
+   
   end
 end

@@ -26,7 +26,7 @@ defmodule Pokerwars.GameTest.Raise do
     assert length(game.players) == 4
     assert game.status == :ready_to_start
 
-    step("The game is started")
+    step("Game Start")
     {:ok, game} = Game.apply_action(game, {:start_game})
     assert game.round == :pre_flop
 
@@ -79,7 +79,7 @@ defmodule Pokerwars.GameTest.Raise do
     step("There are 4 cards on the table")
     assert length(game.board) == 4
 
-    step("All players check") 
+    step("All players check")
 
     game =
       with {:ok, game} <- Game.apply_action(game, {:check, @player1}),
@@ -97,8 +97,7 @@ defmodule Pokerwars.GameTest.Raise do
     step("There are 5 cards on the table")
     assert length(game.board) == 5
 
-
-    step("All players check") 
+    step("All players check")
 
     game =
       with {:ok, game} <- Game.apply_action(game, {:check, @player1}),
@@ -109,6 +108,9 @@ defmodule Pokerwars.GameTest.Raise do
 
     assert game.bet == 0
     assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
+
+    step("Game Over")
     assert game.round == :game_over
+    # IO.inspect game
   end
 end

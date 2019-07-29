@@ -70,5 +70,4 @@ defmodule Pokerwars.Player do
   def score(%Player{} = player) do
     Ranker.calculate_numeric_score(player.hand)
   end
-
 end

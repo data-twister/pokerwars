@@ -357,11 +357,11 @@ defmodule Pokerwars.Game do
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
-        # IO.puts(" We are eligible to go to the next round")
+         IO.puts(" We are eligible to go to the next round")
         true
 
       false ->
-        # IO.puts(" We are not eligible to go to the next round")
+         IO.puts(" We are not eligible to go to the next round")
         false
     end
   end
