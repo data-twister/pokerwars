@@ -10,7 +10,7 @@ defmodule Pokerwars.Round do
 
   def next?(game) do
     ## check that all players have met the big blind and have checked, or limit chk
-    IO.puts("checking if we have any open bets before switching to the next round")
+    # IO.puts("checking if we have any open bets before switching to the next round")
 
     amounts =
       Enum.map(game.players, fn x ->

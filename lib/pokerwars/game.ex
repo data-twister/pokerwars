@@ -115,9 +115,13 @@ defmodule Pokerwars.Game do
   defp game_action({:raise, player, amount}, game) do
     case Player.current?(player, game) do
       true ->
-        game = take_bet(game, {player, amount}, :raise)
+        {status, game} = take_bet(game, {player, amount}, :raise)
 
-        continue(game)
+        case status == :ok do
+          true -> continue(game)
+          false -> {:error, game }
+        end
+        
 
       false ->
         {:error, "it is not " <> player.name <> "s turn"}
@@ -130,9 +134,12 @@ defmodule Pokerwars.Game do
   defp game_action({:call, player}, game) do
     case Player.current?(player, game) do
       true ->
-        game = take_bet(game, {player, game.bet}, :call)
+        {status, game} = take_bet(game, {player, game.bet}, :call)
 
-        continue(game)
+        case status == :ok do
+          true -> continue(game)
+          false -> {:error, game }
+        end
 
       false ->
         {:error, "it is not " <> player.name <> "s turn"}
@@ -215,11 +222,11 @@ defmodule Pokerwars.Game do
   defp take_blinds(game) do
     [first_player, second_player | other_players] = game.players
 
-    game = take_bet(game, {first_player, game.rules.small_blind}, :blinds)
+    {_, game} = take_bet(game, {first_player, game.rules.small_blind}, :blinds)
 
     {_, game} = next_player(game)
 
-    game = take_bet(game, {second_player, game.rules.big_blind}, :blinds)
+    {_, game} = take_bet(game, {second_player, game.rules.big_blind}, :blinds)
 
     {_, game} = next_player(game)
 
@@ -273,12 +280,12 @@ defmodule Pokerwars.Game do
 
     case is_betting? do
       true ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
-        %{game | pot: pot + amount, bet: amount, players: players}
+         IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
+        {:ok, %{game | pot: pot + amount, bet: amount, players: players}}
 
       false ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
-        %{game | players: players}
+          IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied") 
+        {:error, %{game | players: players}}
     end
   end
 
@@ -351,9 +358,12 @@ defmodule Pokerwars.Game do
 
     bet_count = Enum.count(bets)
 
-    # IO.inspect(bet_count, label: "open bets")
-    # IO.inspect(game.current_player + 1, label: "current_player")
-    # IO.inspect(Enum.count(game.players), label: "total players")
+    # IO.inspect(game.players, label: "players")
+    IO.inspect(game.bet, label: "current_bet")
+    IO.inspect(bet_count, label: "open bets")
+    IO.inspect(bets, label: "open bets")
+    IO.inspect(game.current_player + 1, label: "current_player")
+    IO.inspect(Enum.count(game.players), label: "total players")
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->

@@ -61,17 +61,33 @@ defmodule Pokerwars.GameTest.Raise do
     step("There are 3 cards on the table")
     assert length(game.board) == 3
 
-    step("All players check")
+    step("Player 1 checks Player 2 raises by 1 others call or check")
 
     game =
       with {:ok, game} <- Game.apply_action(game, {:check, @player1}),
+           {:ok, game} <- Game.apply_action(game, {:raise, @player2, 1}),
+           {:ok, game} <- Game.apply_action(game, {:call, @player3}),
+           {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+           {:ok, game} <- Game.apply_action(game, {:call, @player1}),
            {:ok, game} <- Game.apply_action(game, {:check, @player2}),
            {:ok, game} <- Game.apply_action(game, {:check, @player3}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player4}),
+           do: game
+
+    assert game.bet == 1
+    assert [1, 1, 1, 1] == Enum.map(game.players, & &1.amount)
+
+    step("Last player Checks")
+    game =
+      with {:ok, game} <- Game.apply_action(game, {:check, @player4}),
            do: game
 
     assert game.bet == 0
     assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
+
+    step "we cannot raise by more than we have in our stack"
+    {status, _} = Game.apply_action(game, {:raise, @player1, 100000})
+assert status == :error
+
 
     step("Here comes the turn")
     assert game.round == :turn
@@ -79,17 +95,25 @@ defmodule Pokerwars.GameTest.Raise do
     step("There are 4 cards on the table")
     assert length(game.board) == 4
 
-    step("All players check")
+    step("Player 1 raises by 20 others call")
 
     game =
-      with {:ok, game} <- Game.apply_action(game, {:check, @player1}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player2}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player3}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player4}),
+      with {:ok, game} <- Game.apply_action(game, {:raise, @player1, 20}),
+           {:ok, game} <- Game.apply_action(game, {:call, @player2}),
+           {:ok, game} <- Game.apply_action(game, {:call, @player3}),
            do: game
 
-    assert game.bet == 0
-    assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
+    assert game.bet == 20
+    assert [20, 20, 20, 0] == Enum.map(game.players, & &1.amount)
+   
+    step("Last player Calls")
+    game =
+    with {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+         do: game
+
+
+  assert game.bet == 0
+  assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
 
     step("Here comes the river")
     assert game.round == :river
