@@ -177,8 +177,8 @@ defmodule Pokerwars.Round do
           winner: winner
         } = game
       ) do
- # Ranker.check_for_winner(game)
- game = %{game | current_player: 0, round: :game_over}
- {:ok, game }
+    winners = Ranker.get_winners(game)
+    game = %{game | current_player: 0, round: :game_over, status: :game_over, winner: winners}
+    {:ok, game}
   end
 end

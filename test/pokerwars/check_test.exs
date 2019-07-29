@@ -109,6 +109,6 @@ defmodule Pokerwars.GameTest.Check do
 
     step("Game Over")
     assert game.round == :game_over
-     IO.inspect game
+    IO.inspect(game)
   end
 end
