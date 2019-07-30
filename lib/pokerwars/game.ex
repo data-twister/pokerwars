@@ -75,8 +75,12 @@ defmodule Pokerwars.Game do
   end
 
   defp continue(game) do
-    case next_round?(game) do
+    game = case next_round?(game) do
       true ->
+        # case(Enum.count(game.players < 3)) do
+        #   true ->  %{game | round: :showdown}
+        #   false -> game
+        # end
         game
         |> reset_amounts
         |> Round.next()
