@@ -57,9 +57,7 @@ defmodule Pokerwars.Game do
   """
   def apply_action(game, action) do
     {status, game} = init(game, action)
-
   end
-
 
   defp init(:waiting_for_players, game, action) do
     with {:ok, game} <- Status.waiting_for_players(action, game),
