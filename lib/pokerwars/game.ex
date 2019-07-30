@@ -74,13 +74,11 @@ defmodule Pokerwars.Game do
     game_action(action, game)
   end
 
-  defp continue(game) do
-    game = case next_round?(game) do
+  defp continue(game) do 
+    count = Enum.count(game.players) 
+    game = case next_round?(game) or count < 2 do
       true ->
-        case(Enum.count(game.players) < 3) do
-          true ->  %{game | round: :showdown}
-          false -> game
-        end
+        IO.puts("going to next round")
         game
         |> reset_amounts
         |> Round.next()
@@ -168,10 +166,16 @@ defmodule Pokerwars.Game do
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
-       
+       #ficme : 
+       IO.puts "there are " <> to_string(Enum.count(game.players)) <> " current players"
         players = Enum.reject(game.players, fn x -> x.hash == player.hash end)
 
-        game = %{game | players: players, current_player: game.current_player - 1 }
+        game = case game.current_player == 0 and Enum.count(players) > game.current_player + 1 do
+          true -> game
+            false -> %{game | players: players, current_player: game.current_player - 1 }
+        end
+
+        IO.puts "there are " <> to_string(Enum.count(game.players)) <> " changed players"
 
         game = continue(game)
         {:ok, game}
@@ -289,11 +293,11 @@ defmodule Pokerwars.Game do
 
     case is_betting? do
       true ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
+        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
         {:ok, %{game | pot: pot + amount, bet: amount, players: players}}
 
       false ->
-        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
+        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         {:error, %{game | players: players}}
     end
   end
@@ -376,19 +380,19 @@ defmodule Pokerwars.Game do
     bet_count = Enum.count(bets)
 
     # IO.inspect(game.players, label: "players")
-    IO.inspect(game.bet, label: "current_bet")
-    IO.inspect(bet_count, label: "open bets")
-    IO.inspect(bets, label: "open bets")
-    IO.inspect(game.current_player + 1, label: "current_player")
-    IO.inspect(Enum.count(game.players), label: "total players")
+    # IO.inspect(game.bet, label: "current_bet")
+    # IO.inspect(bet_count, label: "open bets")
+    # IO.inspect(bets, label: "open bets")
+    # IO.inspect(game.current_player + 1, label: "current_player")
+    # IO.inspect(Enum.count(game.players), label: "total players")
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
-        IO.puts(" We are eligible to go to the next round")
+        # IO.puts(" We are eligible to go to the next round")
         true
 
       false ->
-        IO.puts(" We are not eligible to go to the next round")
+        # IO.puts(" We are not eligible to go to the next round")
         false
     end
   end

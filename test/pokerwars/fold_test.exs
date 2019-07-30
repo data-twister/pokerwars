@@ -16,6 +16,7 @@ defmodule Pokerwars.GameTest.Fold do
 
     step("The players join and the game is ready to start")
 
+
     game =
       with {:ok, game} <- Game.apply_action(game, {:join, @player1}),
            {:ok, game} <- Game.apply_action(game, {:join, @player2}),
@@ -26,7 +27,7 @@ defmodule Pokerwars.GameTest.Fold do
     assert length(game.players) == 4
     assert game.status == :ready_to_start
 
-    step("Game Start")
+    step("Game Start: all players fold before the flop")
     {:ok, game} = Game.apply_action(game, {:start_game})
     assert game.round == :pre_flop
 
@@ -41,12 +42,14 @@ defmodule Pokerwars.GameTest.Fold do
            {:ok, game} <- Game.apply_action(game, {:fold, @player1}),
            ## error
            do: game
+          #  IO.inspect game
 
     assert Enum.count(game.players) == 1
 
     step("Game Over")
     assert game.round == :game_over
-    #assert game.winner.name == @player2.name
+    winner = List.first(game.winner)
+    assert winner.name == @player2.name
   end
 
   test "Players fold before the turn" do
@@ -100,6 +103,7 @@ defmodule Pokerwars.GameTest.Fold do
 
     step("Game Over")
     assert game.round == :game_over
-    # assert game.winner.name == @player2.name
+    winner = List.first(game.winner)
+    assert winner.name == @player1.name
   end
 end

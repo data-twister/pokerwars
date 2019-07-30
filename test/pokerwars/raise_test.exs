@@ -127,11 +127,11 @@ defmodule Pokerwars.GameTest.Raise do
       with {:ok, game} <- Game.apply_action(game, {:check, @player1}),
            {:ok, game} <- Game.apply_action(game, {:check, @player2}),
            {:ok, game} <- Game.apply_action(game, {:check, @player3}),
-           {:ok, game} <- Game.apply_action(game, {:check, @player4}),
+           {:ok, game} <- Game.apply_action(game, {:fold, @player4}),
            do: game
 
     assert game.bet == 0
-    assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
+    assert [0] == Enum.map(game.players, & &1.amount)
 
     step("Game Over")
     assert game.round == :game_over

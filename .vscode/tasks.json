@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "mix test > test/test.log",
             "group": {
-                "kind": "build",
+                "kind": "test",
                 "isDefault": true
             }
         }
