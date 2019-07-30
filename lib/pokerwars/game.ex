@@ -158,13 +158,6 @@ defmodule Pokerwars.Game do
     end
   end
 
-  @doc """
-  Player fold function
-  """
-  defp fold_players(game) do
-    players = Enum.reject(game.players, fn x -> x.action == :fold end)
-    %{game | players: players}
-  end
 
   @doc """
   Player fold Action, player chooses to fold his hand and is removed from player list
@@ -186,7 +179,7 @@ defmodule Pokerwars.Game do
             end
           end)
 
-        game = %{game | players: players}
+        game = %{game | players: players, current_player = game.current_player - 1 }
 
         game = continue(game)
         {:ok, game}
@@ -370,7 +363,6 @@ defmodule Pokerwars.Game do
       false ->
         game =
           game
-          |> fold_players
           |> reset_players
           |> available_actions
 
