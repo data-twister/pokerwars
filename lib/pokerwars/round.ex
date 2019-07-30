@@ -21,7 +21,7 @@ defmodule Pokerwars.Round do
 
     case Enum.count(bets) < 1 and game.current_player == Enum.count(game.players) - 1 do
       true -> next(game)
-      false -> {:ok, game}
+      false -> game
     end
   end
 
@@ -49,16 +49,15 @@ defmodule Pokerwars.Round do
       ) do
     {result, deck} = Deck.take(game.deck, 3, true)
 
-    {:ok,
-     %{
-       game
-       | status: :running,
-         round: :flop,
-         current_player: 0,
-         board: result,
-         deck: deck,
-         bet: 0
-     }}
+    %{
+      game
+      | status: :running,
+        round: :flop,
+        current_player: 0,
+        board: result,
+        deck: deck,
+        bet: 0
+    }
   end
 
   def next(
@@ -87,16 +86,15 @@ defmodule Pokerwars.Round do
 
     stay_amt = 0
 
-    {:ok,
-     %{
-       game
-       | bet: stay_amt,
-         status: :running,
-         round: :turn,
-         current_player: 0,
-         board: [card] ++ board,
-         deck: deck
-     }}
+    %{
+      game
+      | bet: stay_amt,
+        status: :running,
+        round: :turn,
+        current_player: 0,
+        board: [card] ++ board,
+        deck: deck
+    }
   end
 
   def next(
@@ -126,7 +124,7 @@ defmodule Pokerwars.Round do
 
     stay_amt = 0
 
-    {:ok, %{game | bet: stay_amt, round: :river, current_player: 0, board: hole, deck: deck}}
+    %{game | bet: stay_amt, round: :river, current_player: 0, board: hole, deck: deck}
   end
 
   def next(
@@ -179,6 +177,6 @@ defmodule Pokerwars.Round do
       ) do
     winners = Ranker.get_winners(game)
     game = %{game | current_player: 0, round: :game_over, status: :game_over, winner: winners}
-    {:ok, game}
+    game
   end
 end

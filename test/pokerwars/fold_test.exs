@@ -39,6 +39,7 @@ defmodule Pokerwars.GameTest.Fold do
       with {:ok, game} <- Game.apply_action(game, {:fold, @player3}),
            {:ok, game} <- Game.apply_action(game, {:fold, @player4}),
            {:ok, game} <- Game.apply_action(game, {:fold, @player1}),
+           ## error
            do: game
 
     assert Enum.count(game.players) == 1
@@ -91,14 +92,15 @@ defmodule Pokerwars.GameTest.Fold do
            {:ok, game} <- Game.apply_action(game, {:fold, @player3}),
            {:ok, game} <- Game.apply_action(game, {:fold, @player4}),
            do: game
-IO.inspect game
-    #assert game.current_player == 0
 
-    #  assert Enum.count(game.players) == 1
+    #  IO.inspect game
+    assert game.current_player == 0
+
+    assert Enum.count(game.players) == 1
 
     # assert game.winner.name == @player2.name
 
-    # step("Game Over")
-    # assert game.round == :game_over
+    step("Game Over")
+    assert game.round == :game_over
   end
 end

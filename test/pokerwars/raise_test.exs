@@ -77,6 +77,7 @@ defmodule Pokerwars.GameTest.Raise do
     assert [1, 1, 1, 1] == Enum.map(game.players, & &1.amount)
 
     step("Last player Checks")
+
     game =
       with {:ok, game} <- Game.apply_action(game, {:check, @player4}),
            do: game
@@ -84,10 +85,9 @@ defmodule Pokerwars.GameTest.Raise do
     assert game.bet == 0
     assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
 
-    step "we cannot raise by more than we have in our stack"
-    {status, _} = Game.apply_action(game, {:raise, @player1, 100000})
-assert status == :error
-
+    step("we cannot raise by more than we have in our stack")
+    {status, _} = Game.apply_action(game, {:raise, @player1, 100_000})
+    assert status == :error
 
     step("Here comes the turn")
     assert game.round == :turn
@@ -105,15 +105,15 @@ assert status == :error
 
     assert game.bet == 1
     assert [1, 1, 1, 0] == Enum.map(game.players, & &1.amount)
-   
+
     step("Last player Calls")
+
     game =
-    with {:ok, game} <- Game.apply_action(game, {:call, @player4}),
-         do: game
+      with {:ok, game} <- Game.apply_action(game, {:call, @player4}),
+           do: game
 
-
-  assert game.bet == 0
-  assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
+    assert game.bet == 0
+    assert [0, 0, 0, 0] == Enum.map(game.players, & &1.amount)
 
     step("Here comes the river")
     assert game.round == :river

@@ -56,8 +56,10 @@ defmodule Pokerwars.Game do
   applies the specified action to the game
   """
   def apply_action(game, action) do
-    init(game, action)
+    {status, game} = init(game, action)
+
   end
+
 
   defp init(:waiting_for_players, game, action) do
     with {:ok, game} <- Status.waiting_for_players(action, game),
@@ -77,11 +79,13 @@ defmodule Pokerwars.Game do
   defp continue(game) do
     case next_round?(game) do
       true ->
-        {_, game} = Round.next(game)
-        game = reset_amounts(game)
-        {:ok, game}
+        game
+        |> fold_players
+        |> reset_amounts
+        |> Round.next()
 
       false ->
+        IO.puts("going to next player")
         next_player(game)
     end
   end
@@ -119,13 +123,17 @@ defmodule Pokerwars.Game do
         {status, game} = take_bet(game, {player, amount}, :raise)
 
         case status == :ok do
-          true -> continue(game)
-          false -> {:error, game }
-        end
-        
+          true ->
+            game = continue(game)
+            {:ok, game}
 
-      false -> game = %{game | message: "it is not " <> player.name <> "s turn" }
-        {:error, game }
+          false ->
+            {:error, game}
+        end
+
+      false ->
+        game = %{game | message: "it is not " <> player.name <> "s turn"}
+        {:error, game}
     end
   end
 
@@ -138,18 +146,27 @@ defmodule Pokerwars.Game do
         {status, game} = take_bet(game, {player, game.bet}, :call)
 
         case status == :ok do
-          true -> continue(game)
-          false -> {:error, game }
+          true ->
+            game = continue(game)
+            {:ok, game}
+
+          false ->
+            {:error, game}
         end
 
       false ->
-        game = %{game | message: "it is not " <> player.name <> "s turn" }
-        {:error, game }
+        game = %{game | message: "it is not " <> player.name <> "s turn"}
+        {:error, game}
     end
   end
 
-  ## todo calc fun for whos turn it is
-  ## fold, get the current player, chk if he is the last, if so we subtrack 1 from the current player
+  @doc """
+  Player fold function
+  """
+  defp fold_players(game) do
+    players = Enum.reject(game.players, fn x -> x.action == :fold end)
+    %{game | players: players}
+  end
 
   @doc """
   Player fold Action, player chooses to fold his hand and is removed from player list
@@ -157,26 +174,29 @@ defmodule Pokerwars.Game do
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
-        players = Enum.reject(game.players, fn p -> p.hash == player.hash end)
+        players =
+          Enum.map(game.players, fn p ->
+            case p.hash == player.hash do
+              true ->
+                %{
+                  player
+                  | action: :fold
+                }
 
-        # IO.puts(player.name <> " folded")
+              false ->
+                p
+            end
+          end)
 
-        current_player =
-          case game.current_player > Enum.count(players) - 2 do
-            true -> game.current_player - 1
-            false -> game.current_player
-          end
+        game = %{game | players: players}
 
-        game = %{game | players: players, current_player: current_player}
-
-        {_, game} = continue(game)
-
-        Ranker.check_for_winner(game)
+        game = continue(game)
+        {:ok, game}
 
       false ->
         # IO.puts "Error: it is not " <> player.name <> "s turn"
-        game = %{game | message: "it is not " <> player.name <> "s turn" }
-        {:error, game }
+        game = %{game | message: "it is not " <> player.name <> "s turn"}
+        {:error, game}
     end
   end
 
@@ -186,12 +206,13 @@ defmodule Pokerwars.Game do
   defp game_action({:check, player}, game) do
     case Player.current?(player, game) do
       true ->
-        continue(game)
+        game = continue(game)
+        {:ok, game}
 
       false ->
         # IO.puts("not the current player")
-        game = %{game | message: "it is not " <> player.name <> "s turn" }
-        {:error, game }
+        game = %{game | message: "it is not " <> player.name <> "s turn"}
+        {:error, game}
     end
   end
 
@@ -201,16 +222,22 @@ defmodule Pokerwars.Game do
   defp available_actions(game) do
     player = Player.current(game)
 
-    case player.amount > game.bet do
-      true -> [:check, :fold, :raise]
-      false -> [:fold, :raise]
-    end
+    available_actions =
+      case player.amount > game.bet do
+        true -> [:check, :fold, :raise]
+        false -> [:fold, :raise]
+      end
+
+    %{
+      game
+      | available_actions: available_actions
+    }
   end
 
   defp shuffle_cards(game) do
     deck = Deck.shuffle(game.deck)
 
-    game = %{
+    %{
       game
       | deck: deck,
         status: :running
@@ -227,14 +254,9 @@ defmodule Pokerwars.Game do
     [first_player, second_player | other_players] = game.players
 
     {_, game} = take_bet(game, {first_player, game.rules.small_blind}, :blinds)
-
-    {_, game} = next_player(game)
-
+    game = next_player(game)
     {_, game} = take_bet(game, {second_player, game.rules.big_blind}, :blinds)
-
-    {_, game} = next_player(game)
-
-    game
+    next_player(game)
   end
 
   @doc """
@@ -284,23 +306,26 @@ defmodule Pokerwars.Game do
 
     case is_betting? do
       true ->
-         IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
+        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
         {:ok, %{game | pot: pot + amount, bet: amount, players: players}}
 
       false ->
-          IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied") 
+        IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         {:error, %{game | players: players}}
     end
   end
 
   defp clear_game(game) do
     players = Enum.map(game.players, &Player.clear_hand/1)
+
     deck = Deck.in_order()
+
     %{game | deck: deck, players: players}
   end
 
   defp reset_amounts(game) do
     players = Enum.map(game.players, &Player.reset/1)
+
     %{game | players: players}
   end
 
@@ -312,8 +337,14 @@ defmodule Pokerwars.Game do
 
   defp deal_card_to_player(deck, player) do
     {card, deck} = Deck.deal(deck)
+
     player = Player.add_card_to_hand(player, card)
+
     {deck, player}
+  end
+
+  defp reset_players(game) do
+    %{game | current_player: 0}
   end
 
   defp deal_cards_from_deck(deck, []) do
@@ -328,24 +359,24 @@ defmodule Pokerwars.Game do
   end
 
   def next_player(game) do
-    case game.current_player < Enum.count(game.players) - 1 do
+    current_player = game.current_player + 1
+
+    case current_player < Enum.count(game.players) do
       true ->
-        game = %{game | current_player: game.current_player + 1}
+        game =
+          %{game | current_player: game.current_player + 1}
+          |> available_actions
 
-        available_actions = available_actions(game)
-
-        game = %{game | available_actions: available_actions}
-
-        {:ok, game}
+        game
 
       false ->
-        game = %{game | current_player: 0}
+        game =
+          game
+          |> fold_players
+          |> reset_players
+          |> available_actions
 
-        available_actions = available_actions(game)
-
-        game = %{game | available_actions: available_actions}
-
-        {:ok, game}
+        game
     end
   end
 
