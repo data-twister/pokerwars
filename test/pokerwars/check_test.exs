@@ -2,7 +2,7 @@ defmodule Pokerwars.GameTest.Check do
   use ExUnit.Case, async: true
   import Pokerwars.TestHelpers
 
-  alias Pokerwars.{Game, Player}
+  alias Pokerwars.{Game, Player,}
 
   @player1 Player.create("Mithereal", 100)
   @player2 Player.create("Ron", 100)
@@ -105,7 +105,6 @@ defmodule Pokerwars.GameTest.Check do
            do: game
 
     assert game.bet == 0
-    assert [0] == Enum.map(game.players, & &1.amount)
 
     step("Game Over")
     assert game.round == :game_over

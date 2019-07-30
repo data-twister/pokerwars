@@ -1,6 +1,5 @@
 defmodule Pokerwars.Ranker do
-  alias Pokerwars.Helpers
-  alias Pokerwars.Player
+  alias Pokerwars.{Helpers, Player}
 
   def decide_winners(hands) do
     Helpers.maxes_by(hands, &calculate_numeric_score/1)

@@ -46,9 +46,6 @@ defmodule Pokerwars.Game do
       ) do
     hash = hash_id()
 
-    # Logger.info "game " <> hash <> " was created "
-    # IO.puts("game " <> hash <> " was created ")
-
     %__MODULE__{rules: rules, deck: deck, hash: hash}
   end
 
@@ -78,20 +75,17 @@ defmodule Pokerwars.Game do
     count = Enum.count(game.players) 
     game = case next_round?(game) or count < 2 do
       true ->
-        IO.puts("going to next round")
         game
         |> reset_amounts
         |> Round.next()
 
       false ->
-        IO.puts("going to next player")
+
         next_player(game)
     end
   end
 
-  @doc """
-  Player join Action, player joins the game 
-  """
+
   defp game_action({:start_game}, game) do
     game =
       game
@@ -113,9 +107,7 @@ defmodule Pokerwars.Game do
     init(:waiting_for_players, game, {:join, player})
   end
 
-  @doc """
-  Player raise Action, player chooses to raise the bet by x amount 
-  """
+
   defp game_action({:raise, player, amount}, game) do
     case Player.current?(player, game) do
       true ->
@@ -166,8 +158,7 @@ defmodule Pokerwars.Game do
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
-       #ficme : 
-       IO.puts "there are " <> to_string(Enum.count(game.players)) <> " current players"
+
         players = Enum.reject(game.players, fn x -> x.hash == player.hash end)
 
         game = case game.current_player == 0 and Enum.count(players) > game.current_player + 1 do
@@ -175,21 +166,17 @@ defmodule Pokerwars.Game do
             false -> %{game | players: players, current_player: game.current_player - 1 }
         end
 
-        IO.puts "there are " <> to_string(Enum.count(game.players)) <> " changed players"
-
         game = continue(game)
         {:ok, game}
 
       false ->
-        # IO.puts "Error: it is not " <> player.name <> "s turn"
+
         game = %{game | message: "it is not " <> player.name <> "s turn"}
         {:error, game}
     end
   end
 
-  @doc """
-  Player Check Action, player chooses to skip his turn without betting
-  """
+
   defp game_action({:check, player}, game) do
     case Player.current?(player, game) do
       true ->
@@ -203,9 +190,7 @@ defmodule Pokerwars.Game do
     end
   end
 
-  @doc """
-  Show the available_actions for the current game_state
-  """
+
   defp available_actions(game) do
     player = Player.current(game)
 
@@ -246,9 +231,7 @@ defmodule Pokerwars.Game do
     next_player(game)
   end
 
-  @doc """
-  Game take_bet Action, this function is responsible for taking coin from the players stack and placing it in the pot
-  """
+
   defp take_bet(game, {player, amount}, action \\ :call) do
     pot = game.pot
 
@@ -293,11 +276,9 @@ defmodule Pokerwars.Game do
 
     case is_betting? do
       true ->
-        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was placed in the pot")
         {:ok, %{game | pot: pot + amount, bet: amount, players: players}}
 
       false ->
-        # IO.puts(player.name <> "s bet for " <> to_string(amount) <> " was denied")
         {:error, %{game | players: players}}
     end
   end
@@ -367,8 +348,6 @@ defmodule Pokerwars.Game do
   end
 
   def next_round?(game) do
-    ## check that all players have met the big blind and have checked, or limit chk
-    # IO.puts("checking if we have any open bets and we are on the last player of the round")
 
     amounts =
       Enum.map(game.players, fn x ->
@@ -379,20 +358,12 @@ defmodule Pokerwars.Game do
 
     bet_count = Enum.count(bets)
 
-    # IO.inspect(game.players, label: "players")
-    # IO.inspect(game.bet, label: "current_bet")
-    # IO.inspect(bet_count, label: "open bets")
-    # IO.inspect(bets, label: "open bets")
-    # IO.inspect(game.current_player + 1, label: "current_player")
-    # IO.inspect(Enum.count(game.players), label: "total players")
 
     case bet_count < 1 and game.current_player > Enum.count(game.players) - 2 do
       true ->
-        # IO.puts(" We are eligible to go to the next round")
         true
 
       false ->
-        # IO.puts(" We are not eligible to go to the next round")
         false
     end
   end

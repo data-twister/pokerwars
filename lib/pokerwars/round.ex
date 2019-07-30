@@ -1,29 +1,6 @@
 defmodule Pokerwars.Round do
-  alias Pokerwars.Game
-  alias Pokerwars.Deck
-  alias Pokerwars.Round
-  alias Pokerwars.Ranker
+  alias Pokerwars.{Deck, Game, Ranker}
 
-  @rounds [:pre_flop, :flop, :turn, :river, :showdown]
-
-  defstruct round: :pre_flop
-
-  def next?(game) do
-    ## check that all players have met the big blind and have checked, or limit chk
-    # IO.puts("checking if we have any open bets before switching to the next round")
-
-    amounts =
-      Enum.map(game.players, fn x ->
-        x.amount
-      end)
-
-    bets = Enum.reject(amounts, fn x -> x == game.bet end)
-
-    case Enum.count(bets) < 1 and game.current_player == Enum.count(game.players) - 1 do
-      true -> next(game)
-      false -> game
-    end
-  end
 
   def next(
         %Game{

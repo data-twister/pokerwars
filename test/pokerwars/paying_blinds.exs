@@ -1,7 +1,7 @@
 defmodule Pokerwars.PayingBlindsTest do
   use ExUnit.Case, async: true
   import Pokerwars.TestHelpers
-  alias Pokerwars.{Player, Game, Deck}
+  alias Pokerwars.{Player, Game}
 
   test "Players pay blinds" do
     {:ok, game} = Game.create()

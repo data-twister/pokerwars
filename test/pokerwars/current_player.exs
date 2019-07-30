@@ -1,7 +1,8 @@
 defmodule Pokerwars.GameTest.CurrentPlayer do
   use ExUnit.Case, async: true
   import Pokerwars.TestHelpers
-  alias Pokerwars.{Player, Game, Deck}
+  
+  alias Pokerwars.{Player, Game}
 
   @player1 Player.create("Mithereal", 100)
   @player2 Player.create("Ron", 100)

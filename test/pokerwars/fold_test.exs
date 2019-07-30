@@ -27,7 +27,7 @@ defmodule Pokerwars.GameTest.Fold do
     assert length(game.players) == 4
     assert game.status == :ready_to_start
 
-    step("Game Start: all players fold before the flop")
+    step("Game Start")
     {:ok, game} = Game.apply_action(game, {:start_game})
     assert game.round == :pre_flop
 

@@ -131,10 +131,8 @@ defmodule Pokerwars.GameTest.Raise do
            do: game
 
     assert game.bet == 0
-    assert [0] == Enum.map(game.players, & &1.amount)
 
     step("Game Over")
     assert game.round == :game_over
-    # IO.inspect game
   end
 end
