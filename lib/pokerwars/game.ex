@@ -133,7 +133,7 @@ defmodule Pokerwars.Game do
         game = %{game | message: "it is not " <> player.name <> "s turn"}
         {:error, game}
     end
-  end
+  end 
 
   @doc """
   Player call Action, player chooses to call the bet 
@@ -165,19 +165,8 @@ defmodule Pokerwars.Game do
   defp game_action({:fold, player}, game) do
     case Player.current?(player, game) do
       true ->
-        players =
-          Enum.map(game.players, fn p ->
-            case p.hash == player.hash do
-              true ->
-                %{
-                  player
-                  | action: :fold
-                }
-
-              false ->
-                p
-            end
-          end)
+       
+        players = Enum.reject(game.players, fn x -> x.hash == player.hash end)
 
         game = %{game | players: players, current_player = game.current_player - 1 }
 
