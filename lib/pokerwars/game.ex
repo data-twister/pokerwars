@@ -78,7 +78,6 @@ defmodule Pokerwars.Game do
     case next_round?(game) do
       true ->
         game
-        |> fold_players
         |> reset_amounts
         |> Round.next()
 
@@ -168,7 +167,7 @@ defmodule Pokerwars.Game do
        
         players = Enum.reject(game.players, fn x -> x.hash == player.hash end)
 
-        game = %{game | players: players, current_player = game.current_player - 1 }
+        game = %{game | players: players, current_player: game.current_player - 1 }
 
         game = continue(game)
         {:ok, game}
