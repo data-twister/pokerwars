@@ -43,10 +43,10 @@ defmodule Pokerwars.GameTest.Fold do
            do: game
 
     assert Enum.count(game.players) == 1
-    #assert game.winner.name == @player2.name
 
     step("Game Over")
     assert game.round == :game_over
+    #assert game.winner.name == @player2.name
   end
 
   test "Players fold before the turn" do
@@ -98,9 +98,8 @@ defmodule Pokerwars.GameTest.Fold do
 
     assert Enum.count(game.players) == 1
 
-    # assert game.winner.name == @player2.name
-
     step("Game Over")
     assert game.round == :game_over
+    # assert game.winner.name == @player2.name
   end
 end
