@@ -56,7 +56,7 @@ defmodule Pokerwars.Game do
   applies the specified action to the game
   """
   def apply_action(game, action) do
-    {status, game} = init(game, action)
+    init(game, action)
   end
 
   defp init(:waiting_for_players, game, action) do
