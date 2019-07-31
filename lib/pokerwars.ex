@@ -3,16 +3,11 @@ defmodule Pokerwars do
   Documentation for Pokerwars.
   """
 
-  @doc """
-  Hello world.
+  @version Mix.Project.config()[:version]
+  @codename Mix.Project.config()[:codename]
 
-  ## Examples
 
-      iex> Pokerwars.hello
-      :world
+  def codename, do: @codename
+  def version, do: @version
 
-  """
-  def hello do
-    :world
-  end
 end

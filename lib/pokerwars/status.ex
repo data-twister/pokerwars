@@ -1,9 +1,7 @@
 defmodule Pokerwars.Status do
-
   require Logger
   alias Pokerwars.{Game, Status}
 
-  
   def next(
         %Game{
           hash: hash,
@@ -59,7 +57,7 @@ defmodule Pokerwars.Status do
     case Enum.member?([:waiting_for_players, :ready_to_start], status) &&
            player.stack > game.rules.big_blind do
       true ->
-       # Logger.info(player.name <> " has joined the game")
+        # Logger.info(player.name <> " has joined the game")
         {:ok, %{game | players: game.players ++ [player]}}
 
       false ->

@@ -16,7 +16,6 @@ defmodule Pokerwars.GameTest.Fold do
 
     step("The players join and the game is ready to start")
 
-
     game =
       with {:ok, game} <- Game.apply_action(game, {:join, @player1}),
            {:ok, game} <- Game.apply_action(game, {:join, @player2}),
@@ -42,7 +41,8 @@ defmodule Pokerwars.GameTest.Fold do
            {:ok, game} <- Game.apply_action(game, {:fold, @player1}),
            ## error
            do: game
-          #  IO.inspect game
+
+    #  IO.inspect game
 
     assert Enum.count(game.players) == 1
 

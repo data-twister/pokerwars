@@ -1,11 +1,8 @@
 defmodule Pokerwars.Player do
-  
   require Logger
   alias Pokerwars.{Player, Card, Ranker}
 
-
   defstruct hash: nil, name: '', hand: [], stack: 0, amount: 0, action: nil
-
 
   def create(name, stack \\ 0) do
     hash = hash_id()
