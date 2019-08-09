@@ -1,7 +1,7 @@
 # Pokerwars
 
-[![CircleCI](https://circleci.com/gh/mithereal/pokerwars.svg?style=svg)](https://circleci.com/gh/mithereal/pokerwars)
+[![CircleCI](https://circleci.com/gh/data-twister/pokerwars.svg?style=svg)](https://circleci.com/gh/data-twister/pokerwars)
 
-[![Build Status](https://travis-ci.org/mithereal/pokerwars.svg?branch=master)](https://travis-ci.org/mithereal/pokerwars)
+[![Build Status](https://travis-ci.org/data-twister/pokerwars.svg?branch=master)](https://travis-ci.org/data-twister/pokerwars)
 
-[![Inline docs](http://inch-ci.org/github/mithereal/pokerwars.svg)](http://inch-ci.org/github/mithereal/pokerwars)
+[![Inline docs](http://inch-ci.org/github/data-twister/pokerwars.svg)](http://inch-ci.org/github/data-twister/pokerwars)
