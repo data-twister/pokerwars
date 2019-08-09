@@ -37,7 +37,9 @@ defmodule Pokerwars.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:mix_test_watch, "~> 0.5", only: :dev}
+      {:mix_test_watch, ">= 0.0.0", only: :dev},
+      {:inch_ex, ">= 0.0.0", only: [:test, :dev]},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 
@@ -48,7 +50,7 @@ defmodule Pokerwars.Mixfile do
   defp aliases do
     [
       # Ensures database is reset before tests are run
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["test"]
     ]
   end
 
