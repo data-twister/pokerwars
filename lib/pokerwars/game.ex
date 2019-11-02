@@ -41,11 +41,10 @@ defmodule Pokerwars.Game do
   create a new game
   """
   def new(
+        hash \\ hash_id(),
         rules \\ %{small_blind: 10, big_blind: 20, min_players: 2, max_players: 10, limit: :fixed},
         deck \\ Deck.in_order()
       ) do
-    hash = hash_id()
-
     %__MODULE__{rules: rules, deck: deck, hash: hash}
   end
 
