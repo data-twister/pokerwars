@@ -359,6 +359,10 @@ defmodule Pokerwars.Game do
     end
   end
 
+  def current_player(game) do
+  Enum.at(game.player,game.current_player)
+end
+
   defimpl String.Chars, for: Pokerwars.Game do
     def to_string(game) do
       deck = game.deck || %Pokerwars.Deck{}
