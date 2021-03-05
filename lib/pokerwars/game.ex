@@ -360,7 +360,7 @@ defmodule Pokerwars.Game do
   end
 
   def current_player(game) do
-  Enum.at(game.player,game.current_player)
+  Enum.at(game.players,game.current_player)
 end
 
   defimpl String.Chars, for: Pokerwars.Game do
